@@ -42,7 +42,7 @@ ensure_symlinks_enabled() {
         *winsymlinks:nativestrict*) ;;
 
         *)
-            dump "native Windows symlinks aren't enabled in Cygwin" >&2
+            dump 'native Windows symbolic links aren'"'"'t enabled in Cygwin' >&2
             return 1
             ;;
     esac
@@ -71,9 +71,9 @@ write_database() {
     done
 }
 
-clean_dirs() {
+delete_obsolete_dirs() {
     if [ $# -ne 2 ]; then
-        echo "usage: ${FUNCNAME[0]} base_dir dir"
+        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR"
         return 1
     fi
 
@@ -101,7 +101,7 @@ clean_dirs() {
     ( cd "$base_dir" && rmdir -p "$subpath" --ignore-fail-on-non-empty )
 }
 
-purge_obsolete_entries() {
+delete_obsolete_entries() {
     local entry
     for entry in "${!database[@]}"; do
         dump "entry: $entry"
@@ -110,13 +110,13 @@ purge_obsolete_entries() {
         var_name="$( expr "$entry" : '%\([_[:alpha:]][_[:alnum:]]*\)%/' )"
 
         if [ -z "$var_name" ]; then
-            dump 'couldn'"'"'t extract variable name' >&2
+            dump '    couldn'"'"'t extract variable name' >&2
             unset database["$entry"]
             continue
         fi
 
         if [ -z "${!var_name+x}" ]; then
-            dump "variable is not set: $var_name" >&2
+            dump "    variable is not set: $var_name" >&2
             unset database["$entry"]
             continue
         fi
@@ -131,25 +131,25 @@ purge_obsolete_entries() {
         local src_path="$src_var_dir/$subpath"
 
         if [ ! -e "$dest_path" ]; then
-            dump "missing destination file: $dest_path" >&2
+            dump "    missing destination file: $dest_path" >&2
             unset database["$entry"]
             continue
         fi
 
         if [ ! -e "$src_path" ]; then
-            dump "missing source file: $src_path" >&2
+            dump "    missing source file: $src_path" >&2
             rm -f "$dest_path"
             unset database["$entry"]
 
             local dest_dir
             dest_dir="$( dirname "$dest_path" )"
 
-            clean_dirs "$dest_var_dir" "$dest_dir" || true
+            delete_obsolete_dirs "$dest_var_dir" "$dest_dir" || true
             continue
         fi
 
         if [ ! -L "$dest_path" ]; then
-            dump "not a symbolic link: $dest_path" >&2
+            dump "    not a symbolic link: $dest_path" >&2
             unset database["$entry"]
             continue
         fi
@@ -158,14 +158,16 @@ purge_obsolete_entries() {
         target_path="$( readlink -e "$dest_path" )"
 
         if [ "$target_path" != "$src_path" ]; then
-            dump "points to a wrong file: $dest_path" >&2
+            dump "    points to a wrong file: $dest_path" >&2
             unset database["$entry"]
             continue
         fi
+
+        dump '... points to the right file'
     done
 }
 
-add_new_entries() {
+discover_new_entries() {
     local src_var_dir
     while IFS= read -d '' -r src_var_dir; do
         dump "source directory: $src_var_dir"
@@ -173,27 +175,30 @@ add_new_entries() {
         local var_name
         var_name="$( basename "$src_var_dir" )"
         var_name="$( expr "$var_name" : '%\([_[:alpha:]][_[:alnum:]]*\)%' )"
-        dump "variable name: $var_name"
+        dump "    variable name: $var_name"
 
         if [ -z "${!var_name+x}" ]; then
-            dump "variable is not set: $var_name" >&2
+            dump "    variable is not set: $var_name" >&2
             continue
         fi
 
         local dest_var_dir
         dest_var_dir="$( readlink -m "$( cygpath "${!var_name}" )" )"
-        dump "destination directory: $dest_var_dir"
+        dump "    destination directory: $dest_var_dir"
 
         local src_path
         while IFS= read -d '' -r src_path; do
-            dump "source file: $src_path"
+            dump "        source file: $src_path"
 
             local entry="%$var_name%${src_path:${#src_var_dir}}"
 
-            [ -n "${database[$entry]+x}" ] && continue
+            if [ -n "${database[$entry]+x}" ]; then
+                dump '        ... points to the right file'
+                continue
+            fi
 
             local dest_path="$dest_var_dir${src_path:${#src_var_dir}}"
-            dump "destination file: $dest_path"
+            dump "        destination file: $dest_path"
 
             mkdir -p "$( dirname "$dest_path" )"
             ln --force -s "$src_path" "$dest_path"
@@ -207,9 +212,9 @@ add_new_entries() {
 main() {
     ensure_database_exists
     read_database
-    purge_obsolete_entries
+    delete_obsolete_entries
     ensure_symlinks_enabled
-    add_new_entries
+    discover_new_entries
     write_database
 }
 
