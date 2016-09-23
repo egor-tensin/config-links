@@ -163,7 +163,7 @@ delete_obsolete_entries() {
             continue
         fi
 
-        dump '... points to the right file'
+        dump '    ... points to the right file'
     done
 }
 
