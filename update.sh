@@ -167,6 +167,8 @@ delete_obsolete_entries() {
     done
 }
 
+var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
+
 discover_new_entries() {
     local src_var_dir
     while IFS= read -d '' -r src_var_dir; do
@@ -174,7 +176,7 @@ discover_new_entries() {
 
         local var_name
         var_name="$( basename "$src_var_dir" )"
-        var_name="$( expr "$var_name" : '%\([_[:alpha:]][_[:alnum:]]*\)%' )"
+        var_name="$( expr "$var_name" : "$var_name_regex" )"
         dump "    variable name: $var_name"
 
         if [ -z "${!var_name+x}" ]; then
@@ -206,7 +208,7 @@ discover_new_entries() {
             database[$entry]=1
         done < <( find "$src_var_dir" -type f -print0 )
 
-    done < <( find "$script_dir" -regextype posix-extended -mindepth 1 -maxdepth 1 -type d -regex '.*/%[_[:alpha:]][_[:alnum:]]*%$' -print0 )
+    done < <( find "$script_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
 }
 
 main() {
