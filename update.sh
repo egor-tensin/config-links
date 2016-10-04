@@ -5,7 +5,7 @@
 # For details, see https://github.com/egor-tensin/windows-home.
 # Distributed under the MIT License.
 
-# This relies on the availability of native symlinks.
+# This script relies on the availability of native symlinks.
 # Those are indeed supported by NTFS, but require Administrator privileges for
 # creation.
 # It likely won't bother you as long as you don't use the functions defined in
@@ -16,6 +16,8 @@
 # Remember that in order to force `ln` to use native NTFS symlinks, your
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
+
+# usage: ./update.sh
 
 set -o errexit
 set -o nounset
