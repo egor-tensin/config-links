@@ -36,7 +36,7 @@ Limitations
 
 Only alphanumeric variable names are supported.
 Speaking more precisely, directory names must match the
-`^%[_[:alpha:]][_[:alnum:]]+%$` regular expression.
+`^%[_[:alpha:]][_[:alnum:]]*%$` regular expression.
 This means that, for example, the environment variable `ProgramFiles(x86)` is
 not supported.
 
