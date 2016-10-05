@@ -17,7 +17,7 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./update.sh [-d|--database PATH] [-n|--dry-run] [-h|--help]
+# usage: ./update.sh [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]
 
 set -o errexit
 set -o nounset
@@ -25,6 +25,8 @@ set -o pipefail
 
 script_argv0="${BASH_SOURCE[0]}"
 script_dir="$( cd "$( dirname "$script_argv0" )" && pwd )"
+
+src_dir="$script_dir"
 
 dump() {
     local prefix="${FUNCNAME[0]}"
@@ -45,13 +47,13 @@ ensure_symlinks_enabled() {
         *winsymlinks:nativestrict*) ;;
 
         *)
-            dump 'native Windows symbolic links aren'"'"'t enabled in Cygwin' >&2
+            dump 'native Windows symlinks aren'"'"'t enabled in Cygwin' >&2
             return 1
             ;;
     esac
 }
 
-database_path="$script_dir/db.bin"
+database_path="$src_dir/db.bin"
 declare -A database
 
 ensure_database_exists() {
@@ -168,7 +170,7 @@ delete_obsolete_entries() {
         fi
 
         if [ ! -L "$dest_path" ]; then
-            dump "    not a symbolic link: $dest_path" >&2
+            dump "    not a symlink: $dest_path" >&2
             unset database["$entry"]
             continue
         fi
@@ -231,15 +233,16 @@ discover_new_entries() {
             database[$entry]=1
         done < <( find "$src_var_dir" -type f -print0 )
 
-    done < <( find "$script_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
+    done < <( find "$src_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
 }
 
 exit_with_usage() {
-    dump "usage: $script_argv0 [-d|--database PATH] [-n|--dry-run] [-h|--help]"
+    dump "usage: $script_argv0 [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]"
     dump 'optional parameters:'
-    dump '  -d,--database    set database file path'
-    dump '  -n,--dry-run     don'"'"'t actually do anything intrusive'
     dump '  -h,--help        show this message and exit'
+    dump '  -d,--database    set database file path'
+    dump '  -s,--source      set source directory path (script directory by default)'
+    dump '  -n,--dry-run     don'"'"'t actually do anything intrusive'
     exit "${exit_with_usage:-0}"
 }
 
@@ -259,7 +262,7 @@ parse_script_options() {
                 continue
                 ;;
 
-            -d|--database)
+            -d|--database|-s|--source)
                 ;;
 
             *)
@@ -280,7 +283,11 @@ parse_script_options() {
 
         case "$key" in
             -d|--database)
-                database_path="$value"
+                database_path="$( readlink -f "$value" )"
+                ;;
+
+            -s|--source)
+                src_dir="$( readlink -e "$value" )"
                 ;;
         esac
     done
