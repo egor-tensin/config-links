@@ -28,8 +28,8 @@ For example, here's a possible representation of the "%PROGRAMDATA%" directory:
                 └── test.txt
 
 Running the script above would create a symlink at
-"C:\ProgramData\a\b\c\test.txt" pointing "%PROGRAMDATA%\a\b\c\test.txt" in this
-repository.
+"C:\ProgramData\a\b\c\test.txt" pointing to "%PROGRAMDATA%\a\b\c\test.txt" in
+this repository.
 
 Limitations
 -----------
