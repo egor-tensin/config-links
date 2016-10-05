@@ -17,11 +17,14 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./update.sh
+# usage: ./update.sh [-d|--database PATH] [-n|--dry-run] [-h|--help]
 
 set -o errexit
 set -o nounset
 set -o pipefail
+
+script_argv0="${BASH_SOURCE[0]}"
+script_dir="$( cd "$( dirname "$script_argv0" )" && pwd )"
 
 dump() {
     local prefix="${FUNCNAME[0]}"
@@ -35,8 +38,6 @@ dump() {
         shift
     done
 }
-
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
  
 ensure_symlinks_enabled() {
     case "${CYGWIN:-}" in
@@ -65,6 +66,11 @@ read_database() {
 }
 
 write_database() {
+    if [ -n "${dry_run+x}" ]; then
+        dump 'won'"'"'t write the database because it'"'"'s a dry run'
+        return 0
+    fi
+
     > "$database_path"
 
     local entry
@@ -98,6 +104,11 @@ delete_obsolete_dirs() {
         dump "base directory: $base_dir"    >&2
         dump "... is not a parent of: $dir" >&2
         return 1
+    fi
+
+    if [ -n "${dry_run+x}" ]; then
+        dump 'won'"'"'t delete the directory because it'"'"'s a dry run'
+        return 0
     fi
 
     ( cd "$base_dir" && rmdir -p "$subpath" --ignore-fail-on-non-empty )
@@ -140,7 +151,13 @@ delete_obsolete_entries() {
 
         if [ ! -e "$src_path" ]; then
             dump "    missing source file: $src_path" >&2
-            rm -f "$dest_path"
+
+            if [ -z "${dry_run+x}" ]; then
+                rm -f "$dest_path"
+            else
+                dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
+            fi
+
             unset database["$entry"]
 
             local dest_dir
@@ -204,8 +221,12 @@ discover_new_entries() {
             local dest_path="$dest_var_dir${src_path:${#src_var_dir}}"
             dump "        destination file: $dest_path"
 
-            mkdir -p "$( dirname "$dest_path" )"
-            ln --force -s "$src_path" "$dest_path"
+            if [ -z "${dry_run+x}" ]; then
+                mkdir -p "$( dirname "$dest_path" )"
+                ln --force -s "$src_path" "$dest_path"
+            else
+                dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
+            fi
 
             database[$entry]=1
         done < <( find "$src_var_dir" -type f -print0 )
@@ -213,7 +234,61 @@ discover_new_entries() {
     done < <( find "$script_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
 }
 
+exit_with_usage() {
+    dump "usage: $script_argv0 [-d|--database PATH] [-n|--dry-run] [-h|--help]"
+    dump 'optional parameters:'
+    dump '  -d,--database    set database file path'
+    dump '  -n,--dry-run     don'"'"'t actually do anything intrusive'
+    dump '  -h,--help        show this message and exit'
+    exit "${exit_with_usage:-0}"
+}
+
+parse_script_options() {
+    while [ "$#" -gt 0 ]; do
+        local key="$1"
+        shift
+
+        case "$key" in
+            -h|--help)
+                exit_with_usage=0
+                break
+                ;;
+
+            -n|--dry-run)
+                dry_run=1
+                continue
+                ;;
+
+            -d|--database)
+                ;;
+
+            *)
+                dump "usage error: unrecognized parameter: $key" >&2
+                exit_with_usage=1
+                break
+                ;;
+        esac
+
+        if [ "$#" -eq 0 ]; then
+            dump "usage error: missing argument for parameter: $key" >&2
+            exit_with_usage=1
+            break
+        fi
+
+        local value="$1"
+        shift
+
+        case "$key" in
+            -d|--database)
+                database_path="$value"
+                ;;
+        esac
+    done
+}
+
 main() {
+    parse_script_options "$@"
+    [ -n "${exit_with_usage+x}" ] && exit_with_usage
     ensure_database_exists
     read_database
     delete_obsolete_entries
@@ -222,4 +297,4 @@ main() {
     write_database
 }
 
-main
+main "$@"
