@@ -1,23 +1,15 @@
-Windows configuration files
-===========================
+Configuration file management
+=============================
 
-An easy and ad-hoc way to store & sync various configuration files across
-Windows installations.
-Actual configuration files are stored in this repository in directories which
-names must roughly match the `%.+%` regular expression.
+An easy but slightly too cumbersome to use tool to store & synchronize various
+configuration files across multiple machines.
+Actual configuration files are stored somewhere else (in a separate repository
+perhaps) in directories which names must roughly match the `%.+%` regular
+expression.
 The part between the percent signs is the name of an environment variable.
-Its value replaces the path of this directory, making for the path of a symlink
-which would point to a file in this repository.
-
-A database of symlinks is maintained in case a file is removed from this
-repository (the corresponding symlink is then deleted).
-Default database file name is "db.bin".
-
-Usage
------
-
-To update the symlinks, run `./update.sh`.
-Requires Cygwin.
+Every file in such directory gets a symlink in the directory pointed to by the
+environment variable.
+Directory hierarchies are preserved.
 
 For example, here's a possible representation of the "%PROGRAMDATA%" directory:
 
@@ -27,9 +19,21 @@ For example, here's a possible representation of the "%PROGRAMDATA%" directory:
             └── c
                 └── test.txt
 
-Running the script above would create a symlink at
-"C:\ProgramData\a\b\c\test.txt" pointing to "%PROGRAMDATA%\a\b\c\test.txt" in
-this repository.
+This tool would create a symlink "C:\ProgramData\a\b\c\test.txt" pointing to
+"%PROGRAMDATA%\a\b\c\test.txt", wherever "%PROGRAMDATA%" is stored.
+
+A database of symlinks is maintained in case a configuration file is deleted
+(the corresponding symlink is then deleted too).
+Default database file name is "db.bin".
+
+Usage
+-----
+
+    usage: update.sh [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]
+
+To update the symlinks, run `./update.sh -d test.bin -s test`, substituting the
+database file name for `test.bin` and directory path for `test`.
+Requires Cygwin.
 
 Limitations
 -----------
