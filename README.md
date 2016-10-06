@@ -1,5 +1,5 @@
 Windows configuration files
-=========================== 
+===========================
 
 An easy and ad-hoc way to store & sync various configuration files across
 Windows installations.

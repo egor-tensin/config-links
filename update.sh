@@ -26,8 +26,6 @@ set -o pipefail
 script_argv0="${BASH_SOURCE[0]}"
 script_dir="$( cd "$( dirname "$script_argv0" )" && pwd )"
 
-src_dir="$script_dir"
-
 dump() {
     local prefix="${FUNCNAME[0]}"
 
@@ -40,7 +38,23 @@ dump() {
         shift
     done
 }
- 
+
+src_dir="$script_dir"
+
+update_src_dir() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} DIR" || true
+        return 1
+    fi
+
+    src_dir="$( readlink --canonicalize-existing "$1" )"
+
+    if [ ! -d "$src_dir" ]; then
+        dump "must be a directory: $src_dir" >&2
+        return 1
+    fi
+}
+
 ensure_symlinks_enabled() {
     case "${CYGWIN:-}" in
         *winsymlinks:native*)       ;;
@@ -55,6 +69,20 @@ ensure_symlinks_enabled() {
 
 database_path="$src_dir/db.bin"
 declare -A database
+
+update_database_path() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} PATH" || true
+        return 1
+    fi
+
+    database_path="$( readlink --canonicalize "$1" )"
+
+    if [ -e "$database_path" ] && [ ! -f "$database_path" ]; then
+        dump "must be a regular file: $database_path" >&2
+        return 1
+    fi
+}
 
 ensure_database_exists() {
     [ -f "$database_path" ] || touch "$database_path"
@@ -83,15 +111,15 @@ write_database() {
 
 delete_obsolete_dirs() {
     if [ $# -ne 2 ]; then
-        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR"
+        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" || true
         return 1
     fi
 
     local base_dir="$1"
     local dir="$2"
 
-    base_dir="$( readlink -m "$base_dir" )"
-    dir="$( readlink -m "$dir" )"
+    base_dir="$( readlink --canonicalize-missing "$base_dir" )"
+    dir="$( readlink --canonicalize-missing "$dir" )"
 
     if [ ! -d "$base_dir" ]; then
         dump "base directory doesn't exist: $base_dir" >&2
@@ -113,7 +141,7 @@ delete_obsolete_dirs() {
         return 0
     fi
 
-    ( cd "$base_dir" && rmdir -p "$subpath" --ignore-fail-on-non-empty )
+    ( cd "$base_dir" && rmdir --parents "$subpath" --ignore-fail-on-non-empty )
 }
 
 delete_obsolete_entries() {
@@ -137,7 +165,7 @@ delete_obsolete_entries() {
         fi
 
         local dest_var_dir
-        dest_var_dir="$( readlink -m "$( cygpath "${!var_name}" )" )"
+        dest_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
         local src_var_dir="$script_dir/%$var_name%"
 
         local subpath="${entry#%$var_name%/}"
@@ -155,7 +183,7 @@ delete_obsolete_entries() {
             dump "    missing source file: $src_path" >&2
 
             if [ -z "${dry_run+x}" ]; then
-                rm -f "$dest_path"
+                rm --force "$dest_path"
             else
                 dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
             fi
@@ -176,7 +204,7 @@ delete_obsolete_entries() {
         fi
 
         local target_path
-        target_path="$( readlink -e "$dest_path" )"
+        target_path="$( readlink --canonicalize-existing "$dest_path" )"
 
         if [ "$target_path" != "$src_path" ]; then
             dump "    points to a wrong file: $dest_path" >&2
@@ -206,7 +234,7 @@ discover_new_entries() {
         fi
 
         local dest_var_dir
-        dest_var_dir="$( readlink -m "$( cygpath "${!var_name}" )" )"
+        dest_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
         dump "    destination directory: $dest_var_dir"
 
         local src_path
@@ -224,8 +252,8 @@ discover_new_entries() {
             dump "        destination file: $dest_path"
 
             if [ -z "${dry_run+x}" ]; then
-                mkdir -p "$( dirname "$dest_path" )"
-                ln --force -s "$src_path" "$dest_path"
+                mkdir --parents "$( dirname "$dest_path" )"
+                ln --force --symbolic "$src_path" "$dest_path"
             else
                 dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
             fi
@@ -237,12 +265,15 @@ discover_new_entries() {
 }
 
 exit_with_usage() {
-    dump "usage: $script_argv0 [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]"
-    dump 'optional parameters:'
-    dump '  -h,--help        show this message and exit'
-    dump '  -d,--database    set database file path'
-    dump '  -s,--source      set source directory path (script directory by default)'
-    dump '  -n,--dry-run     don'"'"'t actually do anything intrusive'
+    local msg
+    IFS= read -d '' -r msg <<MSG || echo -n "$msg" || true
+usage: $script_argv0 [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]
+optional parameters:
+  -h,--help        show this message and exit
+  -d,--database    set database file path
+  -s,--source      set source directory path (script directory by default)
+  -n,--dry-run     don't actually do anything intrusive
+MSG
     exit "${exit_with_usage:-0}"
 }
 
@@ -283,11 +314,17 @@ parse_script_options() {
 
         case "$key" in
             -d|--database)
-                database_path="$( readlink -f "$value" )"
+                update_database_path "$value"
                 ;;
 
             -s|--source)
-                src_dir="$( readlink -e "$value" )"
+                update_src_dir "$value"
+                ;;
+
+            *)
+                dump "usage error: unrecognized parameter: $key" >&2
+                exit_with_usage=1
+                break
                 ;;
         esac
     done
