@@ -166,7 +166,7 @@ delete_obsolete_entries() {
 
         local dest_var_dir
         dest_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
-        local src_var_dir="$script_dir/%$var_name%"
+        local src_var_dir="$src_dir/%$var_name%"
 
         local subpath="${entry#%$var_name%/}"
 
