@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Copyright (c) 2016 Egor Tensin <Egor.Tensin@gmail.com>
-# This file is part of the "Windows configuration files" project.
-# For details, see https://github.com/egor-tensin/windows-home.
+# This file is part of the "Configuration file management" project.
+# For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
 # This script relies on the availability of native symlinks.
