@@ -154,13 +154,13 @@ delete_obsolete_entries() {
 
         if [ -z "$var_name" ]; then
             dump '    couldn'"'"'t extract variable name' >&2
-            unset database["$entry"]
+            unset -v 'database[$entry]'
             continue
         fi
 
         if [ -z "${!var_name+x}" ]; then
             dump "    variable is not set: $var_name" >&2
-            unset database["$entry"]
+            unset -v 'database[$entry]'
             continue
         fi
 
@@ -173,12 +173,6 @@ delete_obsolete_entries() {
         local dest_path="$dest_var_dir/$subpath"
         local src_path="$src_var_dir/$subpath"
 
-        if [ ! -e "$dest_path" ]; then
-            dump "    missing destination file: $dest_path" >&2
-            unset database["$entry"]
-            continue
-        fi
-
         if [ ! -e "$src_path" ]; then
             dump "    missing source file: $src_path" >&2
 
@@ -188,7 +182,7 @@ delete_obsolete_entries() {
                 dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
             fi
 
-            unset database["$entry"]
+            unset -v 'database[$entry]'
 
             local dest_dir
             dest_dir="$( dirname "$dest_path" )"
@@ -197,9 +191,9 @@ delete_obsolete_entries() {
             continue
         fi
 
-        if [ ! -L "$dest_path" ]; then
-            dump "    not a symlink: $dest_path" >&2
-            unset database["$entry"]
+        if [ ! -L "$dest_path" ] || [ ! -e "$dest_path" ]; then
+            dump "    not a symlink or doesn't exist: $dest_path" >&2
+            unset -v 'database[$entry]'
             continue
         fi
 
@@ -208,7 +202,7 @@ delete_obsolete_entries() {
 
         if [ "$target_path" != "$src_path" ]; then
             dump "    points to a wrong file: $dest_path" >&2
-            unset database["$entry"]
+            unset -v 'database[$entry]'
             continue
         fi
 
