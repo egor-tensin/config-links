@@ -17,7 +17,7 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./update.sh [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]
+# usage: ./update.sh [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run] [-h|--help]
 
 set -o errexit
 set -o nounset
@@ -261,12 +261,13 @@ discover_new_entries() {
 exit_with_usage() {
     local msg
     IFS= read -d '' -r msg <<MSG || echo -n "$msg" || true
-usage: $script_argv0 [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]
+usage: $script_argv0 [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run] [-h|--help]
 optional parameters:
-  -h,--help        show this message and exit
-  -d,--database    set database file path
-  -s,--source      set source directory path (script directory by default)
-  -n,--dry-run     don't actually do anything intrusive
+  -h,--help          show this message and exit
+  -d,--database      set database file path
+  -c,--config-dir    set configuration files directory path
+                     (script directory by default)
+  -n,--dry-run       don't actually do anything intrusive
 MSG
     exit "${exit_with_usage:-0}"
 }
@@ -287,7 +288,7 @@ parse_script_options() {
                 continue
                 ;;
 
-            -d|--database|-s|--source)
+            -d|--database|-c|--config-dir)
                 ;;
 
             *)
@@ -311,7 +312,7 @@ parse_script_options() {
                 update_database_path "$value"
                 ;;
 
-            -s|--source)
+            -c|--config-dir)
                 update_src_dir "$value"
                 ;;
 

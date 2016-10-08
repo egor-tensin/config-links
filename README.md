@@ -29,9 +29,9 @@ Default database file name is "db.bin".
 Usage
 -----
 
-    usage: update.sh [-d|--database PATH] [-s|--source DIR] [-n|--dry-run] [-h|--help]
+    usage: update.sh [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run] [-h|--help]
 
-To update the symlinks, run `./update.sh -d test.bin -s test`, substituting the
+To update the symlinks, run `./update.sh -d test.bin -c test`, substituting the
 database file name for `test.bin` and directory path for `test`.
 Requires Cygwin.
 
