@@ -47,12 +47,18 @@ update_config_dir() {
         return 1
     fi
 
-    config_dir="$( readlink --canonicalize-existing "$1" )"
+    local new_config_dir="$( readlink --canonicalize-existing "$1" )"
 
-    if [ ! -d "$config_dir" ]; then
-        dump "must be a directory: $config_dir" >&2
+    if [ ! -d "$new_config_dir" ]; then
+        dump "must be a directory: $new_config_dir" >&2
         return 1
     fi
+
+    if [ "$database_path" == "$config_dir/$default_database_name" ]; then
+        database_path="$new_config_dir/$default_database_name"
+    fi
+
+    config_dir="$new_config_dir"
 }
 
 ensure_symlinks_enabled() {
@@ -67,7 +73,8 @@ ensure_symlinks_enabled() {
     esac
 }
 
-database_path="$config_dir/db.bin"
+readonly default_database_name='db.bin'
+database_path="$config_dir/$default_database_name"
 declare -A database
 
 update_database_path() {
