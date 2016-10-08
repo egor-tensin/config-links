@@ -39,18 +39,18 @@ dump() {
     done
 }
 
-src_dir="$script_dir"
+config_dir="$script_dir"
 
-update_src_dir() {
+update_config_dir() {
     if [ "$#" -ne 1 ]; then
         echo "usage: ${FUNCNAME[0]} DIR" || true
         return 1
     fi
 
-    src_dir="$( readlink --canonicalize-existing "$1" )"
+    config_dir="$( readlink --canonicalize-existing "$1" )"
 
-    if [ ! -d "$src_dir" ]; then
-        dump "must be a directory: $src_dir" >&2
+    if [ ! -d "$config_dir" ]; then
+        dump "must be a directory: $config_dir" >&2
         return 1
     fi
 }
@@ -67,7 +67,7 @@ ensure_symlinks_enabled() {
     esac
 }
 
-database_path="$src_dir/db.bin"
+database_path="$config_dir/db.bin"
 declare -A database
 
 update_database_path() {
@@ -164,44 +164,44 @@ delete_obsolete_entries() {
             continue
         fi
 
-        local dest_var_dir
-        dest_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
-        local src_var_dir="$src_dir/%$var_name%"
+        local symlink_var_dir
+        symlink_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
+        local config_var_dir="$config_dir/%$var_name%"
 
         local subpath="${entry#%$var_name%/}"
 
-        local dest_path="$dest_var_dir/$subpath"
-        local src_path="$src_var_dir/$subpath"
+        local symlink_path="$symlink_var_dir/$subpath"
+        local config_path="$config_var_dir/$subpath"
 
-        if [ ! -e "$src_path" ]; then
-            dump "    missing source file: $src_path" >&2
+        if [ ! -e "$config_path" ]; then
+            dump "    missing source file: $config_path" >&2
 
             if [ -z "${dry_run+x}" ]; then
-                rm --force "$dest_path"
+                rm --force "$symlink_path"
             else
                 dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
             fi
 
             unset -v 'database[$entry]'
 
-            local dest_dir
-            dest_dir="$( dirname "$dest_path" )"
+            local symlink_dir
+            symlink_dir="$( dirname "$symlink_path" )"
 
-            delete_obsolete_dirs "$dest_var_dir" "$dest_dir" || true
+            delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
             continue
         fi
 
-        if [ ! -L "$dest_path" ] || [ ! -e "$dest_path" ]; then
-            dump "    not a symlink or doesn't exist: $dest_path" >&2
+        if [ ! -L "$symlink_path" ] || [ ! -e "$symlink_path" ]; then
+            dump "    not a symlink or doesn't exist: $symlink_path" >&2
             unset -v 'database[$entry]'
             continue
         fi
 
         local target_path
-        target_path="$( readlink --canonicalize-existing "$dest_path" )"
+        target_path="$( readlink --canonicalize-existing "$symlink_path" )"
 
-        if [ "$target_path" != "$src_path" ]; then
-            dump "    points to a wrong file: $dest_path" >&2
+        if [ "$target_path" != "$config_path" ]; then
+            dump "    points to a wrong file: $symlink_path" >&2
             unset -v 'database[$entry]'
             continue
         fi
@@ -213,12 +213,12 @@ delete_obsolete_entries() {
 var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
 
 discover_new_entries() {
-    local src_var_dir
-    while IFS= read -d '' -r src_var_dir; do
-        dump "source directory: $src_var_dir"
+    local config_var_dir
+    while IFS= read -d '' -r config_var_dir; do
+        dump "source directory: $config_var_dir"
 
         local var_name
-        var_name="$( basename "$src_var_dir" )"
+        var_name="$( basename "$config_var_dir" )"
         var_name="$( expr "$var_name" : "$var_name_regex" )"
         dump "    variable name: $var_name"
 
@@ -227,35 +227,35 @@ discover_new_entries() {
             continue
         fi
 
-        local dest_var_dir
-        dest_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
-        dump "    destination directory: $dest_var_dir"
+        local symlink_var_dir
+        symlink_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
+        dump "    destination directory: $symlink_var_dir"
 
-        local src_path
-        while IFS= read -d '' -r src_path; do
-            dump "        source file: $src_path"
+        local config_path
+        while IFS= read -d '' -r config_path; do
+            dump "        source file: $config_path"
 
-            local entry="%$var_name%${src_path:${#src_var_dir}}"
+            local entry="%$var_name%${config_path:${#config_var_dir}}"
 
             if [ -n "${database[$entry]+x}" ]; then
                 dump '        ... points to the right file'
                 continue
             fi
 
-            local dest_path="$dest_var_dir${src_path:${#src_var_dir}}"
-            dump "        destination file: $dest_path"
+            local symlink_path="$symlink_var_dir${config_path:${#config_var_dir}}"
+            dump "        destination file: $symlink_path"
 
             if [ -z "${dry_run+x}" ]; then
-                mkdir --parents "$( dirname "$dest_path" )"
-                ln --force --symbolic "$src_path" "$dest_path"
+                mkdir --parents "$( dirname "$symlink_path" )"
+                ln --force --symbolic "$config_path" "$symlink_path"
             else
                 dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
             fi
 
             database[$entry]=1
-        done < <( find "$src_var_dir" -type f -print0 )
+        done < <( find "$config_var_dir" -type f -print0 )
 
-    done < <( find "$src_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
+    done < <( find "$config_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
 }
 
 exit_with_usage() {
@@ -313,7 +313,7 @@ parse_script_options() {
                 ;;
 
             -c|--config-dir)
-                update_src_dir "$value"
+                update_config_dir "$value"
                 ;;
 
             *)
