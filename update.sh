@@ -23,6 +23,28 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Cygwin-related stuff
+
+readonly os="$( uname -o )"
+
+is_cygwin() {
+    test "$os" == 'Cygwin'
+}
+
+check_symlinks_enabled_cygwin() {
+    case "${CYGWIN-}" in
+        *winsymlinks:native*)       ;;
+        *winsymlinks:nativestrict*) ;;
+
+        *)
+            dump 'native Windows symlinks aren'"'"'t enabled in Cygwin' >&2
+            return 1
+            ;;
+    esac
+}
+
+# Utility routines
+
 script_argv0="${BASH_SOURCE[0]}"
 script_dir="$( cd "$( dirname "$script_argv0" )" && pwd )"
 
@@ -39,6 +61,101 @@ dump() {
     done
 }
 
+resolve_path() {
+    local -a paths
+    local exit_with_usage=
+
+    local must_exist=
+    local type_flag=
+    local type_name=
+
+    while [ "$#" -gt 0 ]; do
+        local key="$1"
+        shift
+
+        case "$key" in
+            -h|--help)
+                exit_with_usage=0
+                break
+                ;;
+            --)
+                break
+                ;;
+            -e|--exist)
+                must_exist=1
+                ;;
+            -d|--directory)
+                type_flag=-d
+                type_name="directory"
+                ;;
+            -f|--file)
+                type_flag=-f
+                type_name="regular file"
+                ;;
+            *)
+                paths+=("$key")
+                ;;
+        esac
+    done
+
+    if [ -n "$exit_with_usage" ]; then
+        echo "usage: ${FUNCNAME[0]} [-h|--help] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..." || true
+        return "$exit_with_usage"
+    fi
+
+    paths+=("$@")
+
+    if is_cygwin; then
+        local i
+        for i in "${!paths[@]}"; do
+            paths[$i]="$( cygpath "${paths[$i]}" )"
+        done
+    fi
+
+    local path
+    while IFS= read -d '' -r path; do
+        if [ -n "$must_exist" ] && [ ! -e "$path" ]; then
+            dump "must exist: $path" >&2
+        fi
+
+        if [ -e "$path" ] && [ -n "$type_flag" ] && ! test "$type_flag" "$path"; then
+            dump "must be a $type_name: $path" >&2
+            return 1
+        fi
+
+        echo "$path"
+    done < <( readlink --zero --canonicalize-missing ${paths[@]+"${paths[@]}"} )
+}
+
+declare -A cached_paths
+
+resolve_variable() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} VAR_NAME" || true
+        return 1
+    fi
+
+    local var_name="$1"
+
+    if [ -z "${!var_name+x}" ]; then
+        dump "variable is not set: $var_name" >&2
+        return 1
+    fi
+
+    local var_path="${!var_name}"
+    resolve_path --exist --directory -- "$var_path"
+}
+
+check_symlinks_enabled() {
+    if is_cygwin; then
+        check_symlinks_enabled_cygwin
+    else
+        return 0
+    fi
+}
+
+# Configuration directory settings
+
 config_dir="$script_dir"
 
 update_config_dir() {
@@ -47,34 +164,19 @@ update_config_dir() {
         return 1
     fi
 
-    local new_config_dir="$( readlink --canonicalize-existing "$1" )"
+    local new_config_dir
+    new_config_dir="$( resolve_path --exist --directory -- "$1" )"
 
-    if [ ! -d "$new_config_dir" ]; then
-        dump "must be a directory: $new_config_dir" >&2
-        return 1
-    fi
-
-    if [ "$database_path" == "$config_dir/$default_database_name" ]; then
-        database_path="$new_config_dir/$default_database_name"
-    fi
+    [ "$db_path" == "$config_dir/$default_db_fn" ] \
+        && db_path="$new_config_dir/$default_db_fn"
 
     config_dir="$new_config_dir"
 }
 
-ensure_symlinks_enabled() {
-    case "${CYGWIN:-}" in
-        *winsymlinks:native*)       ;;
-        *winsymlinks:nativestrict*) ;;
+# Database maintenance
 
-        *)
-            dump 'native Windows symlinks aren'"'"'t enabled in Cygwin' >&2
-            return 1
-            ;;
-    esac
-}
-
-readonly default_database_name='db.bin'
-database_path="$config_dir/$default_database_name"
+readonly default_db_fn='db.bin'
+db_path="$config_dir/$default_db_fn"
 declare -A database
 
 update_database_path() {
@@ -83,23 +185,19 @@ update_database_path() {
         return 1
     fi
 
-    database_path="$( readlink --canonicalize "$1" )"
-
-    if [ -e "$database_path" ] && [ ! -f "$database_path" ]; then
-        dump "must be a regular file: $database_path" >&2
-        return 1
-    fi
+    db_path="$( resolve_path --file "$1" )"
+    mkdir --parents "$( dirname "$db_path" )"
 }
 
 ensure_database_exists() {
-    [ -f "$database_path" ] || touch "$database_path"
+    [ -f "$db_path" ] || touch "$db_path"
 }
 
 read_database() {
     local entry
     while IFS= read -d '' -r entry; do
         database[$entry]=1
-    done < "$database_path"
+    done < "$db_path"
 }
 
 write_database() {
@@ -108,11 +206,11 @@ write_database() {
         return 0
     fi
 
-    > "$database_path"
+    > "$db_path"
 
     local entry
     for entry in "${!database[@]}"; do
-        printf '%s\0' "$entry" >> "$database_path"
+        printf '%s\0' "$entry" >> "$db_path"
     done
 }
 
@@ -125,13 +223,18 @@ delete_obsolete_dirs() {
     local base_dir="$1"
     local dir="$2"
 
-    base_dir="$( readlink --canonicalize-missing "$base_dir" )"
-    dir="$( readlink --canonicalize-missing "$dir" )"
-
     if [ ! -d "$base_dir" ]; then
         dump "base directory doesn't exist: $base_dir" >&2
         return 1
     fi
+
+    if [ ! -d "$dir" ]; then
+        dump "directory doesn't exist: $dir" >&2
+        return 1
+    fi
+
+    base_dir="$( resolve_path --exist --directory -- "$base_dir" )"
+    dir="$( resolve_path --exist --directory -- "$dir" )"
 
     [ "$base_dir" == "$dir" ] && return 0
 
@@ -151,13 +254,15 @@ delete_obsolete_dirs() {
     ( cd "$base_dir" && rmdir --parents "$subpath" --ignore-fail-on-non-empty )
 }
 
+readonly var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
+
 delete_obsolete_entries() {
     local entry
     for entry in "${!database[@]}"; do
         dump "entry: $entry"
 
         local var_name
-        var_name="$( expr "$entry" : '%\([_[:alpha:]][_[:alnum:]]*\)%/' )"
+        var_name="$( expr "$entry" : "$var_name_regex/" )"
 
         if [ -z "$var_name" ]; then
             dump '    couldn'"'"'t extract variable name' >&2
@@ -165,14 +270,12 @@ delete_obsolete_entries() {
             continue
         fi
 
-        if [ -z "${!var_name+x}" ]; then
-            dump "    variable is not set: $var_name" >&2
+        local symlink_var_dir
+        if ! symlink_var_dir="${cached_paths[$var_name]="$( resolve_variable "$var_name" )"}"; then
+            unset -v 'cached_paths[$var_name]'
             unset -v 'database[$entry]'
             continue
         fi
-
-        local symlink_var_dir
-        symlink_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
         local config_var_dir="$config_dir/%$var_name%"
 
         local subpath="${entry#%$var_name%/}"
@@ -205,7 +308,7 @@ delete_obsolete_entries() {
         fi
 
         local target_path
-        target_path="$( readlink --canonicalize-existing "$symlink_path" )"
+        target_path="$( resolve_path "$symlink_path" )"
 
         if [ "$target_path" != "$config_path" ]; then
             dump "    points to a wrong file: $symlink_path" >&2
@@ -217,8 +320,6 @@ delete_obsolete_entries() {
     done
 }
 
-var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
-
 discover_new_entries() {
     local config_var_dir
     while IFS= read -d '' -r config_var_dir; do
@@ -229,13 +330,11 @@ discover_new_entries() {
         var_name="$( expr "$var_name" : "$var_name_regex" )"
         dump "    variable name: $var_name"
 
-        if [ -z "${!var_name+x}" ]; then
-            dump "    variable is not set: $var_name" >&2
+        local symlink_var_dir
+        if ! symlink_var_dir="${cached_paths[$var_name]="$( resolve_variable "$var_name" )"}"; then
+            unset -v 'cached_paths[$var_name]'
             continue
         fi
-
-        local symlink_var_dir
-        symlink_var_dir="$( readlink --canonicalize-missing "$( cygpath "${!var_name}" )" )"
         dump "    destination directory: $symlink_var_dir"
 
         local config_path
@@ -264,6 +363,8 @@ discover_new_entries() {
 
     done < <( find "$config_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
 }
+
+# Main routines
 
 exit_with_usage() {
     local msg
@@ -335,10 +436,10 @@ parse_script_options() {
 main() {
     parse_script_options "$@"
     [ -n "${exit_with_usage+x}" ] && exit_with_usage
+    check_symlinks_enabled
     ensure_database_exists
     read_database
     delete_obsolete_entries
-    ensure_symlinks_enabled
     discover_new_entries
     write_database
 }
