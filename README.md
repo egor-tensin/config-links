@@ -1,48 +1,93 @@
 Configuration file management
 =============================
 
-An easy but slightly too cumbersome to use tool to store & synchronize various
-configuration files across multiple machines.
-Actual configuration files are stored somewhere else (in a separate repository
-perhaps) in directories which names must roughly match the `%.+%` regular
-expression.
+A simple tool to help share (configuration) files across multiple machines.
+Actual files are stored in directories with names roughly matching the `%.+%`
+pattern.
 The part between the percent signs is the name of an environment variable.
-Every file in such directory gets a symlink in the directory pointed to by the
-environment variable.
+Every file in such a directory gets a symlink in the directory pointed to by
+the environment variable.
 Directory hierarchies are preserved.
 
-For example, here's a possible representation of the "%PROGRAMDATA%" directory:
+A database of symlinks is maintained in case a shared file is deleted (the
+corresponding symlink is then deleted too).
+The default database file name is "db.bin", maintained at the top-level
+directory with shared files.
 
-    %PROGRAMDATA%/
-    └── a
-        └── b
-            └── c
-                └── test.txt
-
-This tool would create a symlink "C:\ProgramData\a\b\c\test.txt" pointing to
-"%PROGRAMDATA%\a\b\c\test.txt", wherever "%PROGRAMDATA%" is stored.
-
-A database of symlinks is maintained in case a configuration file is deleted
-(the corresponding symlink is then deleted too).
-Default database file name is "db.bin".
+This description is obviously confusing; see the complete usage example below.
 
 Usage
 -----
 
-    usage: update.sh [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run] [-h|--help]
+Symlinks are managed by `update.sh`.
 
-To update the symlinks, run `./update.sh -d test.bin -c test`, substituting the
-database file name for `test.bin` and directory path for `test`.
-Requires Cygwin.
+```
+usage: update.sh [-h|--help] [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run]
+```
+
+Pass the `--help` flag to this script to examine its detailed usage
+information.
+
+A complete usage example is given below.
+In this example, the symlinks to files in "../cfg" must appear in "~/env".
+
+```
+> pwd
+/cygdrive/d/workspace/personal/config-links
+
+> tree ~/env/
+/home/Egor/env
+
+0 directories, 0 files
+
+> tree ../cfg/
+../cfg/
+└── %ENV%
+    ├── a
+    │   └── b
+    │       └── c
+    │           └── test.txt
+    └── foo
+        └── bar
+            └── baz
+
+6 directories, 2 files
+
+> echo "$ENV"
+/home/Egor/env
+
+> ./update.sh -c ../cfg/
+...
+
+> tree ~/env/
+/home/Egor/env/
+├── a
+│   └── b
+│       └── c
+│           └── test.txt -> /cygdrive/d/workspace/personal/cfg/%ENV%/a/b/c/test.txt
+└── foo
+    └── bar
+        └── baz -> /cygdrive/d/workspace/personal/cfg/%ENV%/foo/bar/baz
+
+5 directories, 2 files
+```
+
+For more realistic usage examples, see
+
+* my [Cygwin environment],
+* configuration files for various [Windows apps].
+
+[Cygwin environment]: https://github.com/egor-tensin/cygwin-home
+[Windows apps]: https://github.com/egor-tensin/windows-home
 
 Limitations
 -----------
 
-Only alphanumeric variable names are supported.
-Speaking more precisely, directory names must match the
+Variable names must be alphanumeric.
+More precisely, the corresponding directory names must match the
 `^%[_[:alpha:]][_[:alnum:]]*%$` regular expression.
-This means that, for example, the environment variable `ProgramFiles(x86)` is
-not supported.
+Consequently, `ProgramFiles(x86)` (and other weird variable names Windows
+allows) are not supported.
 
 License
 -------
