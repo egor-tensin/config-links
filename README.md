@@ -22,7 +22,7 @@ Usage
 Symlinks are managed by `update.sh`.
 
 ```
-usage: update.sh [-h|--help] [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run]
+usage: update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 ```
 
 Pass the `--help` flag to this script to examine its detailed usage
@@ -56,7 +56,7 @@ In this example, the symlinks to files in "../cfg" must appear in "~/env".
 > echo "$ENV"
 /home/Egor/env
 
-> ./update.sh -c ../cfg/
+> ./update.sh --shared-dir ../cfg/
 ...
 
 > tree ~/env/

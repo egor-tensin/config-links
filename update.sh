@@ -17,7 +17,7 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./update.sh [-h|--help] [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run]
+# usage: ./update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 
 set -o errexit
 set -o nounset
@@ -154,29 +154,29 @@ check_symlinks_enabled() {
     fi
 }
 
-# Configuration directory settings
+# Shared directory settings
 
-config_dir="$script_dir"
+shared_dir="$( pwd )"
 
-update_config_dir() {
+update_shared_dir() {
     if [ "$#" -ne 1 ]; then
         echo "usage: ${FUNCNAME[0]} DIR" || true
         return 1
     fi
 
-    local new_config_dir
-    new_config_dir="$( resolve_path --exist --directory -- "$1" )"
+    local new_shared_dir
+    new_shared_dir="$( resolve_path --exist --directory -- "$1" )"
 
-    [ "$db_path" == "$config_dir/$default_db_fn" ] \
-        && db_path="$new_config_dir/$default_db_fn"
+    [ "$db_path" == "$shared_dir/$default_db_fn" ] \
+        && db_path="$new_shared_dir/$default_db_fn"
 
-    config_dir="$new_config_dir"
+    shared_dir="$new_shared_dir"
 }
 
 # Database maintenance
 
 readonly default_db_fn='db.bin'
-db_path="$config_dir/$default_db_fn"
+db_path="$shared_dir/$default_db_fn"
 declare -A database
 
 update_database_path() {
@@ -278,15 +278,15 @@ delete_obsolete_entries() {
             unset -v 'database[$entry]'
             continue
         fi
-        local config_var_dir="$config_dir/%$var_name%"
+        local shared_var_dir="$shared_dir/%$var_name%"
 
         local subpath="${entry#%$var_name%/}"
 
         local symlink_path="$symlink_var_dir/$subpath"
-        local config_path="$config_var_dir/$subpath"
+        local shared_path="$shared_var_dir/$subpath"
 
-        if [ ! -e "$config_path" ]; then
-            dump "    missing source file: $config_path" >&2
+        if [ ! -e "$shared_path" ]; then
+            dump "    missing source file: $shared_path" >&2
 
             if [ -z "${dry_run+x}" ]; then
                 rm --force "$symlink_path"
@@ -312,7 +312,7 @@ delete_obsolete_entries() {
         local target_path
         target_path="$( resolve_path "$symlink_path" )"
 
-        if [ "$target_path" != "$config_path" ]; then
+        if [ "$target_path" != "$shared_path" ]; then
             dump "    points to a wrong file: $symlink_path" >&2
             unset -v 'database[$entry]'
             continue
@@ -323,12 +323,12 @@ delete_obsolete_entries() {
 }
 
 discover_new_entries() {
-    local config_var_dir
-    while IFS= read -d '' -r config_var_dir; do
-        dump "source directory: $config_var_dir"
+    local shared_var_dir
+    while IFS= read -d '' -r shared_var_dir; do
+        dump "source directory: $shared_var_dir"
 
         local var_name
-        var_name="$( basename "$config_var_dir" )"
+        var_name="$( basename "$shared_var_dir" )"
         var_name="$( expr "$var_name" : "$var_name_regex" )"
         dump "    variable name: $var_name"
 
@@ -339,31 +339,31 @@ discover_new_entries() {
         fi
         dump "    destination directory: $symlink_var_dir"
 
-        local config_path
-        while IFS= read -d '' -r config_path; do
-            dump "        source file: $config_path"
+        local shared_path
+        while IFS= read -d '' -r shared_path; do
+            dump "        source file: $shared_path"
 
-            local entry="%$var_name%${config_path:${#config_var_dir}}"
+            local entry="%$var_name%${shared_path:${#shared_var_dir}}"
 
             if [ -n "${database[$entry]+x}" ]; then
                 dump '        ... points to the right file'
                 continue
             fi
 
-            local symlink_path="$symlink_var_dir${config_path:${#config_var_dir}}"
+            local symlink_path="$symlink_var_dir${shared_path:${#shared_var_dir}}"
             dump "        destination file: $symlink_path"
 
             if [ -z "${dry_run+x}" ]; then
                 mkdir --parents "$( dirname "$symlink_path" )"
-                ln --force --symbolic "$config_path" "$symlink_path"
+                ln --force --symbolic "$shared_path" "$symlink_path"
             else
                 dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
             fi
 
             database[$entry]=1
-        done < <( find "$config_var_dir" -type f -print0 )
+        done < <( find "$shared_var_dir" -type f -print0 )
 
-    done < <( find "$config_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
+    done < <( find "$shared_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
 }
 
 # Main routines
@@ -371,12 +371,12 @@ discover_new_entries() {
 exit_with_usage() {
     local msg
     IFS= read -d '' -r msg <<MSG || echo -n "$msg" || true
-usage: $script_argv0 [-h|--help] [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run]
+usage: $script_argv0 [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 optional parameters:
   -h,--help          show this message and exit
   -d,--database      set database file path
-  -c,--config-dir    set configuration files directory path
-                     (script directory by default)
+  -s,--shared-dir    set top-level shared directory path
+                     (current working directory by default)
   -n,--dry-run       don't actually do anything intrusive
 MSG
     exit "${exit_with_usage:-0}"
@@ -398,7 +398,7 @@ parse_script_options() {
                 continue
                 ;;
 
-            -d|--database|-c|--config-dir)
+            -d|--database|-s|--shared-dir)
                 ;;
 
             *)
@@ -422,8 +422,8 @@ parse_script_options() {
                 update_database_path "$value"
                 ;;
 
-            -c|--config-dir)
-                update_config_dir "$value"
+            -s|--shared-dir)
+                update_shared_dir "$value"
                 ;;
 
             *)
