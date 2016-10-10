@@ -17,7 +17,7 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./update.sh [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run] [-h|--help]
+# usage: ./update.sh [-h|--help] [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run]
 
 set -o errexit
 set -o nounset
@@ -190,10 +190,12 @@ update_database_path() {
 }
 
 ensure_database_exists() {
-    [ -f "$db_path" ] || touch "$db_path"
+    [ -f "$db_path" ] || [ -n "${dry_run+x}" ] || touch "$db_path"
 }
 
 read_database() {
+    [ ! -f "$db_path" ] && [ -n "${dry_run+x}" ] && return 0
+
     local entry
     while IFS= read -d '' -r entry; do
         database[$entry]=1
@@ -369,7 +371,7 @@ discover_new_entries() {
 exit_with_usage() {
     local msg
     IFS= read -d '' -r msg <<MSG || echo -n "$msg" || true
-usage: $script_argv0 [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run] [-h|--help]
+usage: $script_argv0 [-h|--help] [-d|--database PATH] [-c|--config-dir DIR] [-n|--dry-run]
 optional parameters:
   -h,--help          show this message and exit
   -d,--database      set database file path
