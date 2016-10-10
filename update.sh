@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Copyright (c) 2016 Egor Tensin <Egor.Tensin@gmail.com>
-# This file is part of the "Configuration file management" project.
+# This file is part of the "Configuration file sharing" project.
 # For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
@@ -175,7 +175,7 @@ update_shared_dir() {
 
 # Database maintenance
 
-readonly default_db_fn='db.bin'
+readonly default_db_fn='links.bin'
 db_path="$shared_dir/$default_db_fn"
 declare -A database
 

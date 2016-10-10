@@ -1,5 +1,5 @@
-Configuration file management
-=============================
+Configuration file sharing
+==========================
 
 A simple tool to help share (configuration) files across multiple machines.
 Actual files are stored in directories with names roughly matching the `%.+%`
@@ -11,7 +11,7 @@ Directory hierarchies are preserved.
 
 A database of symlinks is maintained in case a shared file is deleted (the
 corresponding symlink is then deleted too).
-The default database file name is "db.bin", maintained at the top-level
+The default database file name is "links.bin", maintained in the top-level
 directory with shared files.
 
 This description is obviously confusing; see the complete usage example below.
