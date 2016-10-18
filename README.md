@@ -29,20 +29,21 @@ Pass the `--help` flag to this script to examine its detailed usage
 information.
 
 A complete usage example is given below.
-In this example, the symlinks to files in "../cfg" must appear in "~/env".
+In this example, the symlinks to files in "../src" must appear in
+"/test/dest".
 
 ```
 > pwd
 /cygdrive/d/workspace/personal/config-links
 
-> tree ~/env/
-/home/Egor/env
+> tree /test/dest/
+/test/dest/
 
 0 directories, 0 files
 
-> tree ../cfg/
-../cfg/
-└── %ENV%
+> tree ../src/
+../src/
+└── %DEST%
     ├── a
     │   └── b
     │       └── c
@@ -53,21 +54,21 @@ In this example, the symlinks to files in "../cfg" must appear in "~/env".
 
 6 directories, 2 files
 
-> echo "$ENV"
-/home/Egor/env
+> echo "$DEST"
+/test/dest
 
-> ./update.sh --shared-dir ../cfg/
+> ./update.sh --shared-dir ../src/
 ...
 
-> tree ~/env/
-/home/Egor/env/
+> tree /test/dest/
+/test/dest/
 ├── a
 │   └── b
 │       └── c
-│           └── test.txt -> /cygdrive/d/workspace/personal/cfg/%ENV%/a/b/c/test.txt
+│           └── test.txt -> /cygdrive/d/workspace/personal/src/%DEST%/a/b/c/test.txt
 └── foo
     └── bar
-        └── baz -> /cygdrive/d/workspace/personal/cfg/%ENV%/foo/bar/baz
+        └── baz -> /cygdrive/d/workspace/personal/src/%DEST%/foo/bar/baz
 
 5 directories, 2 files
 ```
