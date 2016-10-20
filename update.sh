@@ -45,7 +45,7 @@ check_symlinks_enabled_cygwin() {
 
 # Utility routines
 
-script_argv0="${BASH_SOURCE[0]}"
+readonly script_argv0="${BASH_SOURCE[0]}"
 
 dump() {
     local prefix="${FUNCNAME[0]}"
