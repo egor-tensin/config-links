@@ -107,7 +107,7 @@ resolve_path() {
     if is_cygwin; then
         local i
         for i in "${!paths[@]}"; do
-            paths[$i]="$( cygpath "${paths[$i]}" )"
+            paths[$i]="$( cygpath -- "${paths[$i]}" )"
         done
     fi
 
@@ -123,7 +123,7 @@ resolve_path() {
         fi
 
         echo "$path"
-    done < <( readlink --zero --canonicalize-missing ${paths[@]+"${paths[@]}"} )
+    done < <( readlink -z --canonicalize-missing -- ${paths[@]+"${paths[@]}"} )
 }
 
 declare -A cached_paths
@@ -184,8 +184,8 @@ update_database_path() {
         return 1
     fi
 
-    db_path="$( resolve_path --file "$1" )"
-    mkdir --parents "$( dirname "$db_path" )"
+    db_path="$( resolve_path --file -- "$1" )"
+    mkdir -p -- "$( dirname -- "$db_path" )"
 }
 
 ensure_database_exists() {
@@ -211,7 +211,7 @@ write_database() {
 
     local entry
     for entry in "${!database[@]}"; do
-        printf '%s\0' "$entry" >> "$db_path"
+        printf -- '%s\0' "$entry" >> "$db_path"
     done
 }
 
@@ -252,7 +252,7 @@ delete_obsolete_dirs() {
         return 0
     fi
 
-    ( cd "$base_dir" && rmdir --parents "$subpath" --ignore-fail-on-non-empty )
+    ( cd "$base_dir" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
 }
 
 readonly var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
@@ -288,7 +288,7 @@ delete_obsolete_entries() {
             dump "    missing source file: $shared_path" >&2
 
             if [ -z "${dry_run+x}" ]; then
-                rm --force "$symlink_path"
+                rm -f -- "$symlink_path"
             else
                 dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
             fi
@@ -296,7 +296,7 @@ delete_obsolete_entries() {
             unset -v 'database[$entry]'
 
             local symlink_dir
-            symlink_dir="$( dirname "$symlink_path" )"
+            symlink_dir="$( dirname -- "$symlink_path" )"
 
             delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
             continue
@@ -309,7 +309,7 @@ delete_obsolete_entries() {
         fi
 
         local target_path
-        target_path="$( resolve_path "$symlink_path" )"
+        target_path="$( resolve_path -- "$symlink_path" )"
 
         if [ "$target_path" != "$shared_path" ]; then
             dump "    points to a wrong file: $symlink_path" >&2
@@ -327,7 +327,7 @@ discover_new_entries() {
         dump "source directory: $shared_var_dir"
 
         local var_name
-        var_name="$( basename "$shared_var_dir" )"
+        var_name="$( basename -- "$shared_var_dir" )"
         var_name="$( expr "$var_name" : "$var_name_regex" )"
         dump "    variable name: $var_name"
 
@@ -353,8 +353,8 @@ discover_new_entries() {
             dump "        destination file: $symlink_path"
 
             if [ -z "${dry_run+x}" ]; then
-                mkdir --parents "$( dirname "$symlink_path" )"
-                ln --force --symbolic "$shared_path" "$symlink_path"
+                mkdir -p -- "$( dirname -- "$symlink_path" )"
+                ln -f -s -- "$shared_path" "$symlink_path"
             else
                 dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
             fi
