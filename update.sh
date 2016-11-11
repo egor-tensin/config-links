@@ -37,7 +37,7 @@ check_symlinks_enabled_cygwin() {
         *winsymlinks:nativestrict*) ;;
 
         *)
-            dump 'native Windows symlinks aren'"'"'t enabled in Cygwin' >&2
+            dump "native Windows symlinks aren't enabled in Cygwin" >&2
             return 1
             ;;
     esac
@@ -203,7 +203,7 @@ read_database() {
 
 write_database() {
     if is_dry_run; then
-        dump 'won'"'"'t write the database because it'"'"'s a dry run'
+        dump "won't write the database because it's a dry run"
         return 0
     fi
 
@@ -248,7 +248,7 @@ delete_obsolete_dirs() {
     fi
 
     if is_dry_run; then
-        dump 'won'"'"'t delete the directory because it'"'"'s a dry run'
+        dump "won't delete the directory because it's a dry run"
         return 0
     fi
 
@@ -302,7 +302,7 @@ delete_obsolete_entries() {
             if [ ! -L "$symlink_path" ]; then
                 dump "    not a symlink, so won't delete: $symlink_path"
             elif is_dry_run; then
-                dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
+                dump "    won't delete an obsolete symlink, because it's a dry run"
             else
                 rm -f -- "$symlink_path"
 
@@ -367,7 +367,7 @@ discover_new_entries() {
             dump "        destination file: $symlink_path"
 
             if is_dry_run; then
-                dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
+                dump "        won't create a symlink because it's a dry run"
             else
                 mkdir -p -- "$( dirname -- "$symlink_path" )"
                 ln -f -s -- "$shared_path" "$symlink_path"
