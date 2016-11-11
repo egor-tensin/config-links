@@ -60,13 +60,15 @@ dump() {
     done
 }
 
-resolve_path() {
+traverse_path() {
     local -a paths
     local exit_with_usage=
 
     local must_exist=
     local type_flag=
     local type_name=
+
+    local fmt='%s\n'
 
     while [ "$#" -gt 0 ]; do
         local key="$1"
@@ -76,6 +78,9 @@ resolve_path() {
             -h|--help)
                 exit_with_usage=0
                 break
+                ;;
+            -z|-0|--zero)
+                fmt='%s\0'
                 ;;
             --)
                 break
@@ -115,6 +120,7 @@ resolve_path() {
     while IFS= read -d '' -r path; do
         if [ -n "$must_exist" ] && [ ! -e "$path" ]; then
             dump "must exist: $path" >&2
+            return 1
         fi
 
         if [ -e "$path" ] && [ -n "$type_flag" ] && ! test "$type_flag" "$path"; then
@@ -122,7 +128,7 @@ resolve_path() {
             return 1
         fi
 
-        echo "$path"
+        printf -- "$fmt" "$path"
     done < <( readlink -z --canonicalize-missing -- ${paths[@]+"${paths[@]}"} )
 }
 
@@ -149,124 +155,15 @@ resolve_variable() {
     fi
 
     local var_path="${!var_name}"
-    resolve_path --exist --directory -- "$var_path"
+    traverse_path --exist --directory -- "$var_path"
 }
 
 cache_variable() {
     local var_name
     for var_name; do
+        [ -n "${cached_paths[$var_name]+x}" ] && continue
         cached_paths[$var_name]="$( resolve_variable "$var_name" )"
     done
-}
-
-check_symlinks_enabled() {
-    if is_cygwin; then
-        check_symlinks_enabled_cygwin
-    else
-        return 0
-    fi
-}
-
-# Shared directory settings
-
-shared_dir="$( pwd )"
-
-update_shared_dir() {
-    if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} DIR" || true
-        return 1
-    fi
-
-    local new_shared_dir
-    new_shared_dir="$( resolve_path --exist --directory -- "$1" )"
-
-    [ "$db_path" == "$shared_dir/$default_db_fn" ] \
-        && db_path="$new_shared_dir/$default_db_fn"
-
-    shared_dir="$new_shared_dir"
-}
-
-# Database maintenance
-
-readonly default_db_fn='links.bin'
-db_path="$shared_dir/$default_db_fn"
-declare -A database
-
-update_database_path() {
-    if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} PATH" || true
-        return 1
-    fi
-
-    db_path="$( resolve_path --file -- "$1" )"
-    mkdir -p -- "$( dirname -- "$db_path" )"
-}
-
-ensure_database_exists() {
-    [ -f "$db_path" ] || is_dry_run || touch "$db_path"
-}
-
-read_database() {
-    [ ! -f "$db_path" ] && is_dry_run && return 0
-
-    local entry
-    while IFS= read -d '' -r entry; do
-        database[$entry]=1
-    done < "$db_path"
-}
-
-write_database() {
-    if is_dry_run; then
-        dump "won't write the database because it's a dry run"
-        return 0
-    fi
-
-    > "$db_path"
-
-    local entry
-    for entry in "${!database[@]}"; do
-        printf -- '%s\0' "$entry" >> "$db_path"
-    done
-}
-
-delete_obsolete_dirs() {
-    if [ $# -ne 2 ]; then
-        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" || true
-        return 1
-    fi
-
-    local base_dir="$1"
-    local dir="$2"
-
-    if [ ! -d "$base_dir" ]; then
-        dump "base directory doesn't exist: $base_dir" >&2
-        return 1
-    fi
-
-    if [ ! -d "$dir" ]; then
-        dump "directory doesn't exist: $dir" >&2
-        return 1
-    fi
-
-    base_dir="$( resolve_path --exist --directory -- "$base_dir" )"
-    dir="$( resolve_path --exist --directory -- "$dir" )"
-
-    [ "$base_dir" == "$dir" ] && return 0
-
-    local subpath="${dir##$base_dir/}"
-
-    if [ "$subpath" == "$dir" ]; then
-        dump "base directory: $base_dir"    >&2
-        dump "... is not a parent of: $dir" >&2
-        return 1
-    fi
-
-    if is_dry_run; then
-        dump "won't delete the directory because it's a dry run"
-        return 0
-    fi
-
-    ( cd "$base_dir" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
 }
 
 readonly var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
@@ -286,111 +183,196 @@ extract_variable_name() {
     done
 }
 
+# Shared directory settings
+
+shared_dir="$( pwd )"
+
+update_shared_dir() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} DIR" || true
+        return 1
+    fi
+
+    local new_shared_dir
+    new_shared_dir="$( traverse_path --exist --directory -- "$1" )"
+
+    [ "$db_path" == "$shared_dir/$default_db_fn" ] \
+        && db_path="$new_shared_dir/$default_db_fn"
+
+    shared_dir="$new_shared_dir"
+}
+
+# Database maintenance
+
+readonly default_db_fn='links.bin'
+db_path="$shared_dir/$default_db_fn"
+declare -A database
+
+update_database_path() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} PATH" || true
+        return 1
+    fi
+
+    db_path="$( traverse_path --file -- "$1" )"
+    mkdir -p -- "$( dirname -- "$db_path" )"
+}
+
+ensure_database_exists() {
+    [ -f "$db_path" ] || is_dry_run || > "$db_path"
+}
+
+read_database() {
+    [ ! -f "$db_path" ] && is_dry_run && return 0
+
+    local entry
+    while IFS= read -d '' -r entry; do
+        database[$entry]=1
+    done < "$db_path"
+}
+
+write_database() {
+    is_dry_run && return 0
+
+    > "$db_path"
+
+    local entry
+    for entry in "${!database[@]}"; do
+        printf -- '%s\0' "$entry" >> "$db_path"
+    done
+}
+
+delete_obsolete_dirs() {
+    if [ $# -ne 2 ]; then
+        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" || true
+        return 1
+    fi
+
+    is_dry_run && return 0
+
+    local base_dir="$1"
+    local dir="$2"
+
+    base_dir="$( traverse_path --exist --directory -- "$base_dir" )"
+    dir="$( traverse_path --exist --directory -- "$dir" )"
+
+    [ "$base_dir" == "$dir" ] && return 0
+
+    local subpath="${dir##$base_dir/}"
+
+    if [ "$subpath" == "$dir" ]; then
+        dump "base directory: $base_dir"    >&2
+        dump "... is not a parent of: $dir" >&2
+        return 1
+    fi
+
+    ( cd "$base_dir" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
+}
+
 delete_obsolete_entries() {
     local entry
     for entry in "${!database[@]}"; do
         dump "entry: $entry"
+        unset -v 'database[$entry]'
 
         local var_name
-        if ! var_name="$( extract_variable_name "$entry" )"; then
-            unset -v 'database[$entry]'
-            continue
-        fi
+        var_name="$( extract_variable_name "$entry" )" || continue
         cache_variable "$var_name"
 
         local symlink_var_dir
-        if ! symlink_var_dir="$( resolve_variable "$var_name" )"; then
-            unset -v 'database[$entry]'
-            continue
-        fi
+        symlink_var_dir="$( resolve_variable "$var_name" )" || continue
         local shared_var_dir="$shared_dir/%$var_name%"
-
         local subpath="${entry#%$var_name%/}"
-
         local symlink_path="$symlink_var_dir/$subpath"
         local shared_path="$shared_var_dir/$subpath"
 
-        if [ ! -e "$shared_path" ]; then
-            dump "    missing source file: $shared_path" >&2
+        dump "    shared file path: $shared_path"
+        dump "    symlink path: $symlink_path"
+
+        if [ ! -L "$shared_path" ] && [ ! -e "$shared_path" ]; then
+            dump '    the shared file is missing, so going to delete the symlink'
+            is_dry_run && continue
 
             if [ ! -L "$symlink_path" ]; then
-                dump "    not a symlink, so won't delete: $symlink_path"
-            elif is_dry_run; then
-                dump "    won't delete an obsolete symlink, because it's a dry run"
-            else
-                rm -f -- "$symlink_path"
-
-                local symlink_dir
-                symlink_dir="$( dirname -- "$symlink_path" )"
-
-                delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
+                dump "    not a symlink or doesn't exist, so won't delete"
+                continue
             fi
 
-            unset -v 'database[$entry]'
+            local target_path
+            target_path="$( traverse_path -- "$symlink_path" )"
+
+            if [ "$shared_path" != "$target_path" ]; then
+                dump "    doesn't point to the shared file, so won't delete"
+                continue
+            fi
+
+            rm -f -- "$symlink_path"
+
+            local symlink_dir
+            symlink_dir="$( dirname -- "$symlink_path" )"
+
+            delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
             continue
         fi
 
-        if [ ! -L "$symlink_path" ] || [ ! -e "$symlink_path" ]; then
-            dump "    not a symlink or doesn't exist: $symlink_path" >&2
-            unset -v 'database[$entry]'
+        if [ ! -L "$symlink_path" ]; then
+            dump "    not a symlink or doesn't exist"
             continue
         fi
 
         local target_path
-        target_path="$( resolve_path -- "$symlink_path" )"
+        target_path="$( traverse_path -- "$symlink_path" )"
 
         if [ "$target_path" != "$shared_path" ]; then
-            dump "    points to a wrong file: $symlink_path" >&2
-            unset -v 'database[$entry]'
+            dump "    doesn't point to the shared file"
             continue
         fi
 
-        dump '    ... points to the right file'
+        dump '    ... points to the shared file'
+        database[$entry]=1
     done
 }
 
 discover_new_entries() {
     local shared_var_dir
     while IFS= read -d '' -r shared_var_dir; do
-        dump "source directory: $shared_var_dir"
+        dump "shared directory: $shared_dir/$shared_var_dir"
 
         local var_name
-        var_name="$( basename -- "$shared_var_dir" )"
-        var_name="$( expr "$var_name" : "$var_name_regex" )"
-        dump "    variable name: $var_name"
+        var_name="$( extract_variable_name "$shared_var_dir" )"
         cache_variable "$var_name"
 
+        shared_var_dir="$shared_dir/$shared_var_dir"
+
         local symlink_var_dir
-        if ! symlink_var_dir="$( resolve_variable "$var_name" )"; then
-            continue
-        fi
-        dump "    destination directory: $symlink_var_dir"
+        symlink_var_dir="$( resolve_variable "$var_name" )" || continue
+        dump "    symlinks directory: $symlink_var_dir"
 
         local shared_path
         while IFS= read -d '' -r shared_path; do
-            dump "        source file: $shared_path"
+            dump "        shared file path: $shared_path"
 
-            local entry="%$var_name%${shared_path:${#shared_var_dir}}"
+            local entry="%$var_name%/${shared_path:${#shared_var_dir}}"
 
             if [ -n "${database[$entry]+x}" ]; then
-                dump '        ... points to the right file'
+                dump '        ... already has a symlink'
                 continue
             fi
 
-            local symlink_path="$symlink_var_dir${shared_path:${#shared_var_dir}}"
-            dump "        destination file: $symlink_path"
+            local subpath="${shared_path:${#shared_var_dir}}"
+            local symlink_path="$symlink_var_dir/$subpath"
 
-            if is_dry_run; then
-                dump "        won't create a symlink because it's a dry run"
-            else
-                mkdir -p -- "$( dirname -- "$symlink_path" )"
-                ln -f -s -- "$shared_path" "$symlink_path"
-            fi
+            dump "        symlink path: $symlink_path"
+
+            is_dry_run && continue
+
+            mkdir -p -- "$( dirname -- "$symlink_path" )"
+            ln -f -s --no-target-directory -- "$shared_path" "$symlink_path"
 
             database[$entry]=1
         done < <( find "$shared_var_dir" -type f -print0 )
 
-    done < <( find "$shared_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -print0 )
+    done < <( find "$shared_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -printf '%P/\0' )
 }
 
 # Main routines
@@ -429,14 +411,14 @@ parse_script_options() {
                 ;;
 
             *)
-                dump "usage error: unrecognized parameter: $key" >&2
+                dump "unrecognized parameter: $key" >&2
                 exit_with_usage=1
                 break
                 ;;
         esac
 
         if [ "$#" -eq 0 ]; then
-            dump "usage error: missing argument for parameter: $key" >&2
+            dump "missing argument for parameter: $key" >&2
             exit_with_usage=1
             break
         fi
@@ -454,7 +436,7 @@ parse_script_options() {
                 ;;
 
             *)
-                dump "usage error: unrecognized parameter: $key" >&2
+                dump "unrecognized parameter: $key" >&2
                 exit_with_usage=1
                 break
                 ;;
@@ -464,6 +446,14 @@ parse_script_options() {
 
 is_dry_run() {
     test -n "${dry_run+x}"
+}
+
+check_symlinks_enabled() {
+    if is_cygwin; then
+        check_symlinks_enabled_cygwin
+    else
+        return 0
+    fi
 }
 
 main() {
