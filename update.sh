@@ -189,11 +189,11 @@ update_database_path() {
 }
 
 ensure_database_exists() {
-    [ -f "$db_path" ] || [ -n "${dry_run+x}" ] || touch "$db_path"
+    [ -f "$db_path" ] || is_dry_run || touch "$db_path"
 }
 
 read_database() {
-    [ ! -f "$db_path" ] && [ -n "${dry_run+x}" ] && return 0
+    [ ! -f "$db_path" ] && is_dry_run && return 0
 
     local entry
     while IFS= read -d '' -r entry; do
@@ -202,7 +202,7 @@ read_database() {
 }
 
 write_database() {
-    if [ -n "${dry_run+x}" ]; then
+    if is_dry_run; then
         dump 'won'"'"'t write the database because it'"'"'s a dry run'
         return 0
     fi
@@ -247,7 +247,7 @@ delete_obsolete_dirs() {
         return 1
     fi
 
-    if [ -n "${dry_run+x}" ]; then
+    if is_dry_run; then
         dump 'won'"'"'t delete the directory because it'"'"'s a dry run'
         return 0
     fi
@@ -257,16 +257,28 @@ delete_obsolete_dirs() {
 
 readonly var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
 
+extract_variable_name() {
+    local s
+    for s; do
+        local var_name
+        var_name="$( expr "$s" : "$var_name_regex/" )"
+
+        if [ -z "$var_name" ]; then
+            dump "couldn't extract variable name from: $s" >&2
+            return 1
+        fi
+
+        echo "$var_name"
+    done
+}
+
 delete_obsolete_entries() {
     local entry
     for entry in "${!database[@]}"; do
         dump "entry: $entry"
 
         local var_name
-        var_name="$( expr "$entry" : "$var_name_regex/" )"
-
-        if [ -z "$var_name" ]; then
-            dump '    couldn'"'"'t extract variable name' >&2
+        if ! var_name="$( extract_variable_name "$entry" )"; then
             unset -v 'database[$entry]'
             continue
         fi
@@ -289,7 +301,7 @@ delete_obsolete_entries() {
 
             if [ ! -L "$symlink_path" ]; then
                 dump "    not a symlink, so won't delete: $symlink_path"
-            elif [ -n "${dry_run+x}" ]; then
+            elif is_dry_run; then
                 dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
             else
                 rm -f -- "$symlink_path"
@@ -354,11 +366,11 @@ discover_new_entries() {
             local symlink_path="$symlink_var_dir${shared_path:${#shared_var_dir}}"
             dump "        destination file: $symlink_path"
 
-            if [ -z "${dry_run+x}" ]; then
+            if is_dry_run; then
+                dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
+            else
                 mkdir -p -- "$( dirname -- "$symlink_path" )"
                 ln -f -s -- "$shared_path" "$symlink_path"
-            else
-                dump '        won'"'"'t create a symlink because it'"'"'s a dry run'
             fi
 
             database[$entry]=1
@@ -434,6 +446,10 @@ parse_script_options() {
                 ;;
         esac
     done
+}
+
+is_dry_run() {
+    test -n "${dry_run+x}"
 }
 
 main() {
