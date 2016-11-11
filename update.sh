@@ -287,18 +287,20 @@ delete_obsolete_entries() {
         if [ ! -e "$shared_path" ]; then
             dump "    missing source file: $shared_path" >&2
 
-            if [ -z "${dry_run+x}" ]; then
-                rm -f -- "$symlink_path"
-            else
+            if [ ! -L "$symlink_path" ]; then
+                dump "    not a symlink, so won't delete: $symlink_path"
+            elif [ -n "${dry_run+x}" ]; then
                 dump '    won'"'"'t delete an obsolete symlink, because it'"'"'s a dry run'
+            else
+                rm -f -- "$symlink_path"
+
+                local symlink_dir
+                symlink_dir="$( dirname -- "$symlink_path" )"
+
+                delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
             fi
 
             unset -v 'database[$entry]'
-
-            local symlink_dir
-            symlink_dir="$( dirname -- "$symlink_path" )"
-
-            delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
             continue
         fi
 
