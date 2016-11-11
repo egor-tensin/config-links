@@ -126,6 +126,8 @@ resolve_path() {
     done < <( readlink -z --canonicalize-missing -- ${paths[@]+"${paths[@]}"} )
 }
 
+# Variable resolution
+
 declare -A cached_paths
 
 resolve_variable() {
@@ -136,6 +138,11 @@ resolve_variable() {
 
     local var_name="$1"
 
+    if [ -n "${cached_paths[$var_name]+x}" ]; then
+        echo "${cached_paths[$var_name]}"
+        return 0
+    fi
+
     if [ -z "${!var_name+x}" ]; then
         dump "variable is not set: $var_name" >&2
         return 1
@@ -143,6 +150,13 @@ resolve_variable() {
 
     local var_path="${!var_name}"
     resolve_path --exist --directory -- "$var_path"
+}
+
+cache_variable() {
+    local var_name
+    for var_name; do
+        cached_paths[$var_name]="$( resolve_variable "$var_name" )"
+    done
 }
 
 check_symlinks_enabled() {
@@ -282,10 +296,10 @@ delete_obsolete_entries() {
             unset -v 'database[$entry]'
             continue
         fi
+        cache_variable "$var_name"
 
         local symlink_var_dir
-        if ! symlink_var_dir="${cached_paths[$var_name]="$( resolve_variable "$var_name" )"}"; then
-            unset -v 'cached_paths[$var_name]'
+        if ! symlink_var_dir="$( resolve_variable "$var_name" )"; then
             unset -v 'database[$entry]'
             continue
         fi
@@ -344,10 +358,10 @@ discover_new_entries() {
         var_name="$( basename -- "$shared_var_dir" )"
         var_name="$( expr "$var_name" : "$var_name_regex" )"
         dump "    variable name: $var_name"
+        cache_variable "$var_name"
 
         local symlink_var_dir
-        if ! symlink_var_dir="${cached_paths[$var_name]="$( resolve_variable "$var_name" )"}"; then
-            unset -v 'cached_paths[$var_name]'
+        if ! symlink_var_dir="$( resolve_variable "$var_name" )"; then
             continue
         fi
         dump "    destination directory: $symlink_var_dir"
