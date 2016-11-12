@@ -79,7 +79,7 @@ traverse_path() {
                 exit_with_usage=0
                 break
                 ;;
-            -z|-0|--zero)
+            -0|-z|--zero)
                 fmt='%s\0'
                 ;;
             --)
@@ -103,7 +103,7 @@ traverse_path() {
     done
 
     if [ -n "$exit_with_usage" ]; then
-        echo "usage: ${FUNCNAME[0]} [-h|--help] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..." || true
+        echo "usage: ${FUNCNAME[0]} [-h|--help] [-0|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..." || true
         return "$exit_with_usage"
     fi
 
