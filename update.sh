@@ -96,6 +96,11 @@ traverse_path() {
                 type_flag=-f
                 type_name="regular file"
                 ;;
+            -*)
+                dump "unrecognized parameter: $key" >&2
+                exit_with_usage=1
+                break
+                ;;
             *)
                 paths+=("$key")
                 ;;
@@ -103,11 +108,16 @@ traverse_path() {
     done
 
     if [ -n "$exit_with_usage" ]; then
-        echo "usage: ${FUNCNAME[0]} [-h|--help] [-0|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..." || true
+        local destfd=1
+        [ "$exit_with_usage" -ne 0 ] && destfd=2
+
+        echo "usage: ${FUNCNAME[0]} [-h|--help] [-0|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..." >&"$destfd" || true
         return "$exit_with_usage"
     fi
 
     paths+=("$@")
+
+    [ "${#paths[@]}" -eq 0 ] && return 0
 
     if is_cygwin; then
         local i
@@ -138,7 +148,7 @@ declare -A cached_paths
 
 resolve_variable() {
     if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} VAR_NAME" || true
+        echo "usage: ${FUNCNAME[0]} VAR_NAME" >&2 || true
         return 1
     fi
 
@@ -189,7 +199,7 @@ shared_dir="$( pwd )"
 
 update_shared_dir() {
     if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} DIR" || true
+        echo "usage: ${FUNCNAME[0]} DIR" >&2 || true
         return 1
     fi
 
@@ -210,7 +220,7 @@ declare -A database
 
 update_database_path() {
     if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} PATH" || true
+        echo "usage: ${FUNCNAME[0]} PATH" >&2 || true
         return 1
     fi
 
@@ -244,7 +254,7 @@ write_database() {
 
 delete_obsolete_dirs() {
     if [ $# -ne 2 ]; then
-        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" || true
+        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" >&2 || true
         return 1
     fi
 
@@ -310,8 +320,8 @@ delete_obsolete_entries() {
 
             local symlink_dir
             symlink_dir="$( dirname -- "$symlink_path" )"
-
             delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
+
             continue
         fi
 
@@ -378,8 +388,11 @@ discover_new_entries() {
 # Main routines
 
 exit_with_usage() {
+    local destfd=1
+    [ "${exit_with_usage:-0}" -ne 0 ] && destfd=2
+
     local msg
-    IFS= read -d '' -r msg <<MSG || echo -n "$msg" || true
+    IFS= read -d '' -r msg <<MSG || echo -n "$msg" >&"$destfd" || true
 usage: $script_argv0 [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 optional parameters:
   -h,--help          show this message and exit
@@ -388,6 +401,7 @@ optional parameters:
                      (current working directory by default)
   -n,--dry-run       don't actually do anything intrusive
 MSG
+
     exit "${exit_with_usage:-0}"
 }
 
@@ -401,15 +415,12 @@ parse_script_options() {
                 exit_with_usage=0
                 break
                 ;;
-
             -n|--dry-run)
                 dry_run=1
                 continue
                 ;;
-
             -d|--database|-s|--shared-dir)
                 ;;
-
             *)
                 dump "unrecognized parameter: $key" >&2
                 exit_with_usage=1
@@ -430,11 +441,9 @@ parse_script_options() {
             -d|--database)
                 update_database_path "$value"
                 ;;
-
             -s|--shared-dir)
                 update_shared_dir "$value"
                 ;;
-
             *)
                 dump "unrecognized parameter: $key" >&2
                 exit_with_usage=1
