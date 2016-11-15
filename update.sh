@@ -45,7 +45,7 @@ check_symlinks_enabled_cygwin() {
 
 # Utility routines
 
-readonly script_argv0="${BASH_SOURCE[0]}"
+readonly script_argv0="$( printf '%q' "${BASH_SOURCE[0]}" )"
 
 dump() {
     local prefix="${FUNCNAME[0]}"
@@ -111,7 +111,10 @@ traverse_path() {
         local destfd=1
         [ "$exit_with_usage" -ne 0 ] && destfd=2
 
-        echo "usage: ${FUNCNAME[0]} [-h|--help] [-0|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..." >&"$destfd" || true
+        local msg
+        IFS= read -d '' -r msg <<MSG || echo -n "$msg" >&"$destfd" || true
+usage: ${FUNCNAME[0]} [-h|--help] [-0|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]...
+MSG
         return "$exit_with_usage"
     fi
 
@@ -394,7 +397,8 @@ exit_with_usage() {
     local msg
     IFS= read -d '' -r msg <<MSG || echo -n "$msg" >&"$destfd" || true
 usage: $script_argv0 [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
-optional parameters:
+
+parameters:
   -h,--help          show this message and exit
   -d,--database      set database file path
   -s,--shared-dir    set top-level shared directory path
