@@ -75,10 +75,10 @@ In this example, the symlinks to files in "../src" must appear in
 
 For more realistic usage examples, see
 
-* my [Cygwin environment],
+* my [Linux/Cygwin environment],
 * configuration files for various [Windows apps].
 
-[Cygwin environment]: https://github.com/egor-tensin/cygwin-home
+[Linux/Cygwin environment]: https://github.com/egor-tensin/cygwin-home
 [Windows apps]: https://github.com/egor-tensin/windows-home
 
 Limitations
