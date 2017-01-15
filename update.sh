@@ -45,7 +45,7 @@ check_symlinks_enabled_cygwin() {
 
 # Utility routines
 
-readonly script_argv0="$( printf '%q' "${BASH_SOURCE[0]}" )"
+readonly script_argv0="$( printf -- '%q' "${BASH_SOURCE[0]}" )"
 
 dump() {
     local prefix="${FUNCNAME[0]}"
@@ -185,13 +185,10 @@ extract_variable_name() {
     local s
     for s; do
         local var_name
-        var_name="$( expr "$s" : "$var_name_regex/" )"
-
-        if [ -z "$var_name" ]; then
+        if ! var_name="$( expr "$s" : "$var_name_regex/" )"; then
             dump "couldn't extract variable name from: $s" >&2
             return 1
         fi
-
         echo "$var_name"
     done
 }
@@ -279,7 +276,7 @@ delete_obsolete_dirs() {
         return 1
     fi
 
-    ( cd "$base_dir" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
+    ( cd -- "$base_dir" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
 }
 
 delete_obsolete_entries() {
