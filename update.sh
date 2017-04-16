@@ -45,7 +45,8 @@ check_symlinks_enabled_cygwin() {
 
 # Utility routines
 
-readonly script_argv0="$( printf -- '%q' "${BASH_SOURCE[0]}" )"
+script_name="$( basename -- "${BASH_SOURCE[0]}" )"
+readonly script_name
 
 dump() {
     local prefix="${FUNCNAME[0]}"
@@ -393,9 +394,7 @@ exit_with_usage() {
 
     local msg
     IFS= read -d '' -r msg <<MSG || echo -n "$msg" >&"$destfd" || true
-usage: $script_argv0 [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
-
-parameters:
+usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
   -h,--help          show this message and exit
   -d,--database      set database file path
   -s,--shared-dir    set top-level shared directory path
