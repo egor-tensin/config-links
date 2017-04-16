@@ -205,16 +205,16 @@ update_shared_dir() {
     local new_shared_dir
     new_shared_dir="$( traverse_path --exist --directory -- "$1" )"
 
-    [ "$db_path" == "$shared_dir/$default_db_fn" ] \
-        && db_path="$new_shared_dir/$default_db_fn"
+    [ "$db_path" == "$shared_dir/$default_db_name" ] \
+        && db_path="$new_shared_dir/$default_db_name"
 
     shared_dir="$new_shared_dir"
 }
 
 # Database maintenance
 
-readonly default_db_fn='links.bin'
-db_path="$shared_dir/$default_db_fn"
+readonly default_db_name='links.bin'
+db_path="$shared_dir/$default_db_name"
 declare -A database
 
 update_database_path() {
