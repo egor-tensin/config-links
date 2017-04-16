@@ -23,9 +23,20 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+dump() {
+    local prefix="${FUNCNAME[0]}"
+    [ "${#FUNCNAME[@]}" -gt 1 ] && prefix="${FUNCNAME[1]}"
+
+    local msg
+    for msg; do
+        echo "$prefix: $msg"
+    done
+}
+
 # Cygwin-related stuff
 
-readonly os="$( uname -o )"
+os="$( uname -o )"
+readonly os
 
 is_cygwin() {
     test "$os" == 'Cygwin'
@@ -43,27 +54,22 @@ check_symlinks_enabled_cygwin() {
     esac
 }
 
-# Utility routines
+# Making sure paths point to files/directories
 
-script_name="$( basename -- "${BASH_SOURCE[0]}" )"
-readonly script_name
-
-dump() {
+_traverse_path_usage() {
     local prefix="${FUNCNAME[0]}"
+    [ "${#FUNCNAME[@]}" -gt 1 ] && prefix="${FUNCNAME[1]}"
 
-    if [ "${#FUNCNAME[@]}" -gt 1 ]; then
-        prefix="${FUNCNAME[1]}"
-    fi
-
-    while [ "$#" -ne 0 ]; do
-        echo "$prefix: $1" || true
-        shift
+    local msg
+    for msg; do
+        echo "$prefix: $msg"
     done
+
+    echo "usage: $prefix [-h|--help] [-0|--null|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]..."
 }
 
 traverse_path() {
-    local -a paths
-    local exit_with_usage=
+    local -a paths=()
 
     local must_exist=
     local type_flag=
@@ -77,10 +83,10 @@ traverse_path() {
 
         case "$key" in
             -h|--help)
-                exit_with_usage=0
-                break
+                _traverse_path_usage
+                return 0
                 ;;
-            -0|-z|--zero)
+            -0|--null|-z|--zero)
                 fmt='%s\0'
                 ;;
             --)
@@ -98,26 +104,14 @@ traverse_path() {
                 type_name="regular file"
                 ;;
             -*)
-                dump "unrecognized parameter: $key" >&2
-                exit_with_usage=1
-                break
+                _traverse_path_usage "unrecognized parameter: $key" >&2
+                return 1
                 ;;
             *)
                 paths+=("$key")
                 ;;
         esac
     done
-
-    if [ -n "$exit_with_usage" ]; then
-        local destfd=1
-        [ "$exit_with_usage" -ne 0 ] && destfd=2
-
-        local msg
-        IFS= read -d '' -r msg <<MSG || echo -n "$msg" >&"$destfd" || true
-usage: ${FUNCNAME[0]} [-h|--help] [-0|-z|--zero] [-e|--exist] [-f|--file] [-d|--directory] [--] [PATH]...
-MSG
-        return "$exit_with_usage"
-    fi
 
     paths+=("$@")
 
@@ -129,6 +123,8 @@ MSG
             paths[$i]="$( cygpath -- "${paths[$i]}" )"
         done
     fi
+
+    local -a abs_paths=()
 
     local path
     while IFS= read -d '' -r path; do
@@ -142,8 +138,10 @@ MSG
             return 1
         fi
 
-        printf -- "$fmt" "$path"
+        abs_paths+=("$path")
     done < <( readlink -z --canonicalize-missing -- ${paths[@]+"${paths[@]}"} )
+
+    printf -- "$fmt" ${abs_paths[@]+"${abs_paths[@]}"}
 }
 
 # Variable resolution
@@ -152,7 +150,7 @@ declare -A cached_paths
 
 resolve_variable() {
     if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} VAR_NAME" >&2 || true
+        echo "usage: ${FUNCNAME[0]} VAR_NAME" >&2
         return 1
     fi
 
@@ -200,7 +198,7 @@ shared_dir="$( pwd )"
 
 update_shared_dir() {
     if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} DIR" >&2 || true
+        echo "usage: ${FUNCNAME[0]} DIR" >&2
         return 1
     fi
 
@@ -221,7 +219,7 @@ declare -A database
 
 update_database_path() {
     if [ "$#" -ne 1 ]; then
-        echo "usage: ${FUNCNAME[0]} PATH" >&2 || true
+        echo "usage: ${FUNCNAME[0]} PATH" >&2
         return 1
     fi
 
@@ -255,7 +253,7 @@ write_database() {
 
 delete_obsolete_dirs() {
     if [ $# -ne 2 ]; then
-        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" >&2 || true
+        echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" >&2
         return 1
     fi
 
@@ -388,21 +386,21 @@ discover_new_entries() {
 
 # Main routines
 
-exit_with_usage() {
-    local destfd=1
-    [ "${exit_with_usage:-0}" -ne 0 ] && destfd=2
+script_name="$( basename -- "${BASH_SOURCE[0]}" )"
+readonly script_name
 
+script_usage() {
     local msg
-    IFS= read -d '' -r msg <<MSG || echo -n "$msg" >&"$destfd" || true
-usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+    for msg; do
+        echo "$script_name: $msg"
+    done
+
+    echo "usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
   -h,--help          show this message and exit
   -d,--database      set database file path
   -s,--shared-dir    set top-level shared directory path
                      (current working directory by default)
-  -n,--dry-run       don't actually do anything intrusive
-MSG
-
-    exit "${exit_with_usage:-0}"
+  -n,--dry-run       don't actually do anything intrusive"
 }
 
 parse_script_options() {
@@ -412,8 +410,8 @@ parse_script_options() {
 
         case "$key" in
             -h|--help)
-                exit_with_usage=0
-                break
+                script_usage
+                exit 0
                 ;;
             -n|--dry-run)
                 dry_run=1
@@ -422,16 +420,14 @@ parse_script_options() {
             -d|--database|-s|--shared-dir)
                 ;;
             *)
-                dump "unrecognized parameter: $key" >&2
-                exit_with_usage=1
-                break
+                script_usage "unrecognized parameter: $key" >&2
+                exit 1
                 ;;
         esac
 
         if [ "$#" -eq 0 ]; then
-            dump "missing argument for parameter: $key" >&2
-            exit_with_usage=1
-            break
+            script_usage "missing argument for parameter: $key" >&2
+            exit 1
         fi
 
         local value="$1"
@@ -445,9 +441,8 @@ parse_script_options() {
                 update_shared_dir "$value"
                 ;;
             *)
-                dump "unrecognized parameter: $key" >&2
-                exit_with_usage=1
-                break
+                script_usage "unrecognized parameter: $key" >&2
+                exit 1
                 ;;
         esac
     done
@@ -467,7 +462,6 @@ check_symlinks_enabled() {
 
 main() {
     parse_script_options "$@"
-    [ -n "${exit_with_usage+x}" ] && exit_with_usage
     check_symlinks_enabled
     ensure_database_exists
     read_database
