@@ -252,7 +252,7 @@ write_database() {
 }
 
 delete_obsolete_dirs() {
-    if [ $# -ne 2 ]; then
+    if [ "$#" -ne 2 ]; then
         echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" >&2
         return 1
     fi
