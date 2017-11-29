@@ -78,7 +78,7 @@ For more realistic usage examples, see
 * my [Linux/Cygwin environment],
 * configuration files for various [Windows apps].
 
-[Linux/Cygwin environment]: https://github.com/egor-tensin/cygwin-home
+[Linux/Cygwin environment]: https://github.com/egor-tensin/linux-home
 [Windows apps]: https://github.com/egor-tensin/windows-home
 
 Limitations
