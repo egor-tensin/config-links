@@ -224,7 +224,10 @@ update_database_path() {
     fi
 
     db_path="$( traverse_path --file -- "$1" )"
-    mkdir -p -- "$( dirname -- "$db_path" )"
+
+    local db_dir
+    db_dir="$( dirname -- "$db_path" )"
+    mkdir -p -- "$db_dir"
 }
 
 ensure_database_exists() {
@@ -375,7 +378,9 @@ discover_new_entries() {
 
             is_dry_run && continue
 
-            mkdir -p -- "$( dirname -- "$symlink_path" )"
+            local symlink_dir
+            symlink_dir="$( dirname -- "$symlink_path" )"
+            mkdir -p -- "$symlink_dir"
             ln -f -s --no-target-directory -- "$shared_path" "$symlink_path"
 
             database[$entry]=1
