@@ -161,6 +161,11 @@ resolve_variable() {
         return 0
     fi
 
+    if [ "$var_name" = "$root_var_name" ]; then
+        echo ''
+        return 0
+    fi
+
     if [ -z "${!var_name+x}" ]; then
         dump "variable is not set: $var_name" >&2
         return 1
@@ -178,6 +183,7 @@ cache_variable() {
     done
 }
 
+readonly root_var_name='CONFIG_LINKS_ROOT'
 readonly var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
 
 extract_variable_name() {
@@ -278,7 +284,7 @@ delete_obsolete_dirs() {
         return 1
     fi
 
-    ( cd -- "$base_dir" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
+    ( cd -- "$base_dir/" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
 }
 
 delete_obsolete_entries() {

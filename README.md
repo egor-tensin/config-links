@@ -90,6 +90,8 @@ More precisely, the corresponding directory names must match the
 Consequently, `ProgramFiles(x86)` (and other weird variable names Windows
 allows) are not supported.
 
+A special variable name `CONFIG_LINKS_ROOT` is resolved to the root path, "/".
+
 License
 -------
 
