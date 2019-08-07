@@ -19,7 +19,7 @@ This description is obviously confusing; see the complete usage example below.
 Usage
 -----
 
-Symlinks are managed by `update.sh`.
+Symlinks are managed by `bin/update.sh`.
 
 ```
 usage: update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
@@ -34,7 +34,7 @@ In this example, the symlinks to files in "../src" must appear in
 
 ```
 > pwd
-/cygdrive/d/workspace/personal/config-links
+/cygdrive/d/workspace/personal/config-links/bin
 
 > tree /test/dest/
 /test/dest/
