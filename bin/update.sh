@@ -131,8 +131,8 @@ main() {
     check_symlinks_enabled
     ensure_database_exists
     read_database
-    delete_obsolete_entries
-    discover_new_entries
+    unlink_obsolete_entries
+    link_all_entries
     write_database
 }
 

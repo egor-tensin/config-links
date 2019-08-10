@@ -5,7 +5,7 @@
 
 # Shared directory settings
 
-shared_dir="$( pwd )"
+shared_root_dir="$( pwd )/"
 
 update_shared_dir() {
     if [ "$#" -ne 1 ]; then
@@ -16,8 +16,10 @@ update_shared_dir() {
     local new_shared_dir
     new_shared_dir="$( traverse_path --exist --directory -- "$1" )"
 
-    [ "$db_path" == "$shared_dir/$default_db_name" ] \
-        && db_path="$new_shared_dir/$default_db_name"
+    [ new_shared_dir = / ] || new_shared_dir="$new_shared_dir/"
+
+    [ "$db_path" = "$shared_root_dir$default_db_name" ] \
+        && db_path="$new_shared_dir$default_db_name"
 
     shared_dir="$new_shared_dir"
 }
@@ -25,8 +27,10 @@ update_shared_dir() {
 # Database maintenance
 
 readonly default_db_name='links.bin'
-db_path="$shared_dir/$default_db_name"
+db_path="$shared_root_dir$default_db_name"
 declare -A database
+declare -A shared_paths
+declare -A symlink_paths
 
 update_database_path() {
     if [ "$#" -ne 1 ]; then
@@ -45,17 +49,54 @@ ensure_database_exists() {
     [ -f "$db_path" ] || is_dry_run || > "$db_path"
 }
 
+add_entry() {
+    local entry
+    for entry; do
+        dump "entry: $entry"
+
+        local var_name
+        var_name="$( extract_variable_name "$entry" )"
+        cache_variable "$var_name"
+
+        local shared_var_dir="$shared_root_dir%$var_name%"
+        local symlink_var_dir
+        symlink_var_dir="$( resolve_variable "$var_name" )"
+        local subpath="${entry#%$var_name%/}"
+
+        local shared_path="$shared_var_dir/$subpath"
+        local symlink_path="$symlink_var_dir/$subpath"
+
+        dump "    shared file path: $shared_path"
+        dump "    symlink path: $symlink_path"
+
+        database[$entry]="$var_name"
+        shared_paths[$entry]="$shared_path"
+        symlink_paths[$entry]="$symlink_path"
+    done
+}
+
+remove_entry() {
+    local entry
+    for entry; do
+        unset -v 'database[$entry]'
+        unset -v 'shared_paths[$entry]'
+        unset -v 'symlink_paths[$entry]'
+    done
+}
+
 read_database() {
     [ ! -f "$db_path" ] && is_dry_run && return 0
 
     local entry
     while IFS= read -d '' -r entry; do
-        database[$entry]=1
+        add_entry "$entry"
     done < "$db_path"
 }
 
 write_database() {
     is_dry_run && return 0
+
+    [ "${#database[@]}" -eq 0 ] && rm -f -- "$db_path" && return 0
 
     > "$db_path"
 
@@ -65,13 +106,24 @@ write_database() {
     done
 }
 
+link_entry() {
+    local entry
+    for entry; do
+        local shared_path="${shared_paths[$entry]}"
+        local symlink_path="${symlink_paths[$entry]}"
+
+        local symlink_dir
+        symlink_dir="$( dirname -- "$symlink_path" )"
+        mkdir -p -- "$symlink_dir"
+        ln -f -s --no-target-directory -- "$shared_path" "$symlink_path"
+    done
+}
+
 delete_obsolete_dirs() {
     if [ "$#" -ne 2 ]; then
         echo "usage: ${FUNCNAME[0]} BASE_DIR DIR" >&2
         return 1
     fi
-
-    is_dry_run && return 0
 
     local base_dir="$1"
     local dir="$2"
@@ -79,11 +131,11 @@ delete_obsolete_dirs() {
     base_dir="$( traverse_path --exist --directory -- "$base_dir" )"
     dir="$( traverse_path --exist --directory -- "$dir" )"
 
-    [ "$base_dir" == "$dir" ] && return 0
+    [ "$base_dir" = "$dir" ] && return 0
 
     local subpath="${dir##$base_dir/}"
 
-    if [ "$subpath" == "$dir" ]; then
+    if [ "$subpath" = "$dir" ]; then
         dump "base directory: $base_dir"    >&2
         dump "... is not a parent of: $dir" >&2
         return 1
@@ -92,110 +144,118 @@ delete_obsolete_dirs() {
     ( cd -- "$base_dir/" && rmdir -p --ignore-fail-on-non-empty -- "$subpath" )
 }
 
-delete_obsolete_entries() {
+unlink_entry() {
     local entry
-    for entry in "${!database[@]}"; do
-        dump "entry: $entry"
-        unset -v 'database[$entry]'
+    for entry; do
+        local shared_path="${shared_paths[$entry]}"
+        local symlink_path="${symlink_paths[$entry]}"
 
-        local var_name
-        var_name="$( extract_variable_name "$entry" )" || continue
-        cache_variable "$var_name"
+        rm -f -- "$symlink_path"
 
+        local symlink_dir
+        symlink_dir="$( dirname -- "$symlink_path" )"
+        local var_name="${database[$entry]}"
         local symlink_var_dir
-        symlink_var_dir="$( resolve_variable "$var_name" )" || continue
-        local shared_var_dir="$shared_dir/%$var_name%"
-        local subpath="${entry#%$var_name%/}"
-        local symlink_path="$symlink_var_dir/$subpath"
-        local shared_path="$shared_var_dir/$subpath"
-
-        dump "    shared file path: $shared_path"
-        dump "    symlink path: $symlink_path"
-
-        if [ ! -L "$shared_path" ] && [ ! -e "$shared_path" ]; then
-            dump '    the shared file is missing, so going to delete the symlink'
-            is_dry_run && continue
-
-            if [ ! -L "$symlink_path" ]; then
-                dump "    not a symlink or doesn't exist, so won't delete"
-                continue
-            fi
-
-            local target_path
-            target_path="$( traverse_path -- "$symlink_path" )"
-
-            if [ "$shared_path" != "$target_path" ]; then
-                dump "    doesn't point to the shared file, so won't delete"
-                continue
-            fi
-
-            rm -f -- "$symlink_path"
-
-            local symlink_dir
-            symlink_dir="$( dirname -- "$symlink_path" )"
-            delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
-
-            continue
-        fi
-
-        if [ ! -L "$symlink_path" ]; then
-            dump "    not a symlink or doesn't exist"
-            continue
-        fi
-
-        local target_path
-        target_path="$( traverse_path -- "$symlink_path" )"
-
-        if [ "$target_path" != "$shared_path" ]; then
-            dump "    doesn't point to the shared file"
-            continue
-        fi
-
-        dump '    ... points to the shared file'
-        database[$entry]=1
+        symlink_var_dir="$( resolve_variable "$var_name" )"
+        delete_obsolete_dirs "$symlink_var_dir" "$symlink_dir" || true
     done
 }
 
-discover_new_entries() {
+symlink_present() {
+    local entry
+    for entry; do
+        local symlink_path="${symlink_paths[$entry]}"
+        test -L "$symlink_path" -o -e "$symlink_path"
+    done
+}
+
+symlink_points_to_shared_file() {
+    symlink_present "$@"
+    local entry
+    for entry; do
+        local shared_path="${shared_paths[$entry]}"
+        local symlink_path="${symlink_paths[$entry]}"
+        local target_path
+        target_path="$( traverse_path -- "$symlink_path" )"
+        test "$target_path" = "$shared_path"
+    done
+}
+
+shared_file_present() {
+    local entry
+    for entry; do
+        local shared_path="${shared_paths[$entry]}"
+        test -L "$shared_path" -o -e "$shared_path"
+    done
+}
+
+link_all_entries() {
     local shared_var_dir
     while IFS= read -d '' -r shared_var_dir; do
-        dump "shared directory: $shared_dir/$shared_var_dir"
-
-        local var_name
-        var_name="$( extract_variable_name "$shared_var_dir" )"
-        cache_variable "$var_name"
-
-        shared_var_dir="$shared_dir/$shared_var_dir"
-
-        local symlink_var_dir
-        symlink_var_dir="$( resolve_variable "$var_name" )" || continue
-        dump "    symlinks directory: $symlink_var_dir"
+        dump "shared directory: $shared_root_dir$shared_var_dir"
 
         local shared_path
         while IFS= read -d '' -r shared_path; do
-            dump "        shared file path: $shared_path"
+            dump "    shared file path: $shared_path"
+            local entry="${shared_path:${#shared_root_dir}}"
+            add_entry "$entry" > /dev/null
+            dump "    symlink path: ${symlink_paths[$entry]}"
 
-            local entry="%$var_name%/${shared_path:${#shared_var_dir}}"
-
-            if [ -n "${database[$entry]+x}" ]; then
-                dump '        ... already has a symlink'
-                continue
+            if symlink_present "$entry"; then
+                if symlink_points_to_shared_file "$entry"; then
+                    dump '    ... up-to-date'
+                else
+                    dump "    ... not a symlink or doesn't point to the shared file"
+                    remove_entry "$entry"
+                fi
+            else
+                dump '    ... adding a symlink'
+                is_dry_run || link_entry "$entry"
             fi
 
-            local subpath="${shared_path:${#shared_var_dir}}"
-            local symlink_path="$symlink_var_dir/$subpath"
+        done < <( find "$shared_root_dir$shared_var_dir" -type f -print0 )
+    done < <( find "$shared_root_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -printf '%P\0' )
+}
 
-            dump "        symlink path: $symlink_path"
+unlink_all_entries() {
+    local entry
+    for entry in "${!database[@]}"; do
+        dump "entry: $entry"
+        local shared_path="${shared_paths[$entry]}"
+        local symlink_path="${symlink_paths[$entry]}"
+        dump "    shared file path: $shared_path"
+        dump "    symlink path: $symlink_path"
 
-            is_dry_run && continue
+        if symlink_points_to_shared_file "$entry"; then
+            dump '    ... removing the symlink'
+            is_dry_run || unlink_entry "$entry"
+        else
+            dump "    ... not a symlink or doesn't point to the shared file"
+            remove_entry "$entry"
+        fi
+    done
+}
 
-            local symlink_dir
-            symlink_dir="$( dirname -- "$symlink_path" )"
-            mkdir -p -- "$symlink_dir"
-            ln -f -s --no-target-directory -- "$shared_path" "$symlink_path"
+unlink_obsolete_entries() {
+    local entry
+    for entry in "${!database[@]}"; do
+        dump "entry: $entry"
+        local shared_path="${shared_paths[$entry]}"
+        local symlink_path="${symlink_paths[$entry]}"
+        dump "    shared file path: $shared_path"
+        dump "    symlink path: $symlink_path"
 
-            database[$entry]=1
-        done < <( find "$shared_var_dir" -type f -print0 )
-
-    done < <( find "$shared_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -type d -regex ".*/$var_name_regex\$" -printf '%P/\0' )
+        if symlink_points_to_shared_file "$entry"; then
+            if shared_file_present "$entry"; then
+                dump '    ... up-to-date'
+            else
+                dump '    ... obsolete'
+                is_dry_run || unlink_entry "$entry"
+                remove_entry "$entry"
+            fi
+        else
+            dump "    ... not a symlink or doesn't point to the shared file"
+            remove_entry "$entry"
+        fi
+    done
 }
