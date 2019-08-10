@@ -16,12 +16,12 @@ update_shared_dir() {
     local new_shared_dir
     new_shared_dir="$( traverse_path --exist --directory -- "$1" )"
 
-    [ new_shared_dir = / ] || new_shared_dir="$new_shared_dir/"
+    [ "$new_shared_dir" = / ] || new_shared_dir="$new_shared_dir/"
 
     [ "$db_path" = "$shared_root_dir$default_db_name" ] \
         && db_path="$new_shared_dir$default_db_name"
 
-    shared_dir="$new_shared_dir"
+    shared_root_dir="$new_shared_dir"
 }
 
 # Database maintenance

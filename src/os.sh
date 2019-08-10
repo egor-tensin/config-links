@@ -14,8 +14,8 @@ is_cygwin() {
 
 check_symlinks_enabled_cygwin() {
     case "${CYGWIN-}" in
-        *winsymlinks:native*)       ;;
         *winsymlinks:nativestrict*) ;;
+        *winsymlinks:native*)       ;;
 
         *)
             dump "native Windows symlinks aren't enabled in Cygwin" >&2

@@ -7,6 +7,8 @@
 
 declare -A cached_paths
 
+readonly root_var_name='CONFIG_LINKS_ROOT'
+
 resolve_variable() {
     if [ "$#" -ne 1 ]; then
         echo "usage: ${FUNCNAME[0]} VAR_NAME" >&2
@@ -42,7 +44,6 @@ cache_variable() {
     done
 }
 
-readonly root_var_name='CONFIG_LINKS_ROOT'
 readonly var_name_regex='%\([_[:alpha:]][_[:alnum:]]*\)%'
 
 extract_variable_name() {
