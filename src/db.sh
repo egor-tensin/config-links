@@ -45,10 +45,6 @@ update_database_path() {
     mkdir -p -- "$db_dir"
 }
 
-ensure_database_exists() {
-    [ -f "$db_path" ] || is_dry_run || > "$db_path"
-}
-
 add_entry() {
     local entry
     for entry; do
@@ -63,8 +59,12 @@ add_entry() {
         symlink_var_dir="$( resolve_variable "$var_name" )"
         local subpath="${entry#%$var_name%/}"
 
-        local shared_path="$shared_var_dir/$subpath"
-        local symlink_path="$symlink_var_dir/$subpath"
+        local shared_path="$shared_var_dir"
+        [ "$shared_var_dir" != / ] && shared_path="$shared_path/"
+        shared_path="$shared_path$subpath"
+        local symlink_path="$symlink_var_dir"
+        [ "$symlink_var_dir" != / ] && symlink_path="$symlink_path/"
+        symlink_path="$symlink_path$subpath"
 
         dump "    shared file path: $shared_path"
         dump "    symlink path: $symlink_path"
@@ -85,7 +85,7 @@ remove_entry() {
 }
 
 read_database() {
-    [ ! -f "$db_path" ] && is_dry_run && return 0
+    [ ! -r "$db_path" ] && return 0
 
     local entry
     while IFS= read -d '' -r entry; do
@@ -229,6 +229,7 @@ unlink_all_entries() {
         if symlink_points_to_shared_file "$entry"; then
             dump '    ... removing the symlink'
             is_dry_run || unlink_entry "$entry"
+            remove_entry "$entry"
         else
             dump "    ... not a symlink or doesn't point to the shared file"
             remove_entry "$entry"

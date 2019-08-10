@@ -32,32 +32,10 @@ src_dir="$( cd -- "$script_dir/../src" && pwd )"
 readonly src_dir
 
 . "$src_dir/common.sh"
+. "$src_dir/os.sh"
 . "$src_dir/path.sh"
 . "$src_dir/vars.sh"
 . "$src_dir/db.sh"
-
-# Cygwin-related stuff
-
-os="$( uname -o )"
-readonly os
-
-is_cygwin() {
-    test "$os" == 'Cygwin'
-}
-
-check_symlinks_enabled_cygwin() {
-    case "${CYGWIN-}" in
-        *winsymlinks:native*)       ;;
-        *winsymlinks:nativestrict*) ;;
-
-        *)
-            dump "native Windows symlinks aren't enabled in Cygwin" >&2
-            return 1
-            ;;
-    esac
-}
-
-# Main routines
 
 script_usage() {
     local msg
@@ -118,18 +96,9 @@ parse_script_options() {
     done
 }
 
-check_symlinks_enabled() {
-    if is_cygwin; then
-        check_symlinks_enabled_cygwin
-    else
-        return 0
-    fi
-}
-
 main() {
     parse_script_options "$@"
     check_symlinks_enabled
-    ensure_database_exists
     read_database
     unlink_obsolete_entries
     link_all_entries

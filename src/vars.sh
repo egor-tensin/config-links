@@ -21,7 +21,7 @@ resolve_variable() {
     fi
 
     if [ "$var_name" = "$root_var_name" ]; then
-        echo ''
+        echo '/'
         return 0
     fi
 
