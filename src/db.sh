@@ -28,9 +28,9 @@ update_shared_dir() {
 
 readonly default_db_name='links.bin'
 db_path="$shared_root_dir$default_db_name"
-declare -A database
-declare -A shared_paths
-declare -A symlink_paths
+declare -A database=()
+declare -A shared_paths=()
+declare -A symlink_paths=()
 
 update_database_path() {
     if [ "$#" -ne 1 ]; then
