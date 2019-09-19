@@ -205,8 +205,8 @@ link_all_entries() {
                 if symlink_points_to_shared_file "$entry"; then
                     dump '    ... up-to-date'
                 else
-                    dump "    ... not a symlink or doesn't point to the shared file"
-                    remove_entry "$entry"
+                    dump "    ... not a symlink or doesn't point to the shared file, adding a symlink"
+                    is_dry_run || link_entry "$entry"
                 fi
             else
                 dump '    ... adding a symlink'
