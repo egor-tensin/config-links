@@ -21,6 +21,7 @@ test_src_dir=
 test_dest_dir=
 
 new_test() {
+    echo
     echo 'New test'
 
     test_root_dir="$( mktemp --directory )"
@@ -30,6 +31,7 @@ new_test() {
     echo "Root directory: $test_root_dir"
     echo "Shared directory: $test_src_dir"
     echo "%DEST% directory: $test_dest_dir"
+    echo
 
     cp -r -- "$sample_src_dir_path" "$test_src_dir"
     cp -r -- "$sample_dest_dir_path" "$test_dest_dir"
@@ -49,7 +51,9 @@ verify_output() {
     echo 'Actual directory structure:'
     echo "$actual_output"
 
-    if [ "$actual_output" != "$expected_output" ]; then
+    if [ "$actual_output" = "$expected_output" ]; then
+        echo "They match!"
+    else
         echo "The actual directory structure does not match the expected directory structure!" >&2
         return 1
     fi
