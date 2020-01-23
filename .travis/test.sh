@@ -160,11 +160,33 @@ $test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
+test_symlinks_unlink_works() {
+    # Test that unlink.sh works for symlinked directories inside --shared-dir.
+
+    new_test
+
+    # Files will get symlinks in the directory pointed to by $DEST, as well as
+    # by $ALT_DEST.
+    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/unlink.sh" --shared-dir "$test_src_dir"
+
+    local expected_output
+
+    expected_output="$test_dest_dir->"
+    verify_output "$expected_output"
+
+    expected_output="$test_alt_dest_dir->"
+    verify_output "$expected_output" "$test_alt_dest_dir"
+}
+
 main() {
     test_update_works
     test_unlink_works
     test_unlink_does_not_overwrite_files
     test_symlinks_update_works
+    test_symlinks_unlink_works
 }
 
 main
