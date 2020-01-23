@@ -23,8 +23,11 @@ test_dest_dir=
 test_alt_dest_dir=
 
 new_test() {
+    local test_name=
+    [ "${#FUNCNAME[@]}" -gt 1 ] && test_name="${FUNCNAME[1]}"
+
     echo
-    echo 'New test'
+    echo "New test: $test_name"
 
     test_root_dir="$( mktemp --directory )"
     test_src_dir="$test_root_dir/$src_dir_name"
@@ -68,6 +71,8 @@ verify_output() {
 }
 
 test_update_works() {
+    # Basic test to make sure update.sh actually creates the proper symlinks.
+
     new_test
 
     DEST="$test_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
@@ -85,24 +90,32 @@ $test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
 }
 
 test_unlink_works() {
+    # Basic test to make sure unlink.sh actually removes the created symlinks.
+
     new_test
 
     DEST="$test_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
     DEST="$test_dest_dir" "$script_dir/../bin/unlink.sh" --shared-dir "$test_src_dir"
 
     local expected_output="$test_dest_dir->"
-
     verify_output "$expected_output"
 }
 
 test_unlink_does_not_overwrite_files() {
+    # Check that if a user overwrites a symlink with his own file, unlink.sh
+    # keeps it.
+
     new_test
 
     DEST="$test_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+
+    # Simulate a user overwriting one of the symlinks with his own file.
     rm -- "$test_dest_dir/bar/3.txt"
-    echo '+3' > "$test_dest_dir/bar/3.txt"
+    echo 'User content' > "$test_dest_dir/bar/3.txt"
+
     DEST="$test_dest_dir" "$script_dir/../bin/unlink.sh" --shared-dir "$test_src_dir"
 
+    # 3.txt must be kept:
     local expected_output="$test_dest_dir->
 $test_dest_dir/bar->
 $test_dest_dir/bar/3.txt->"
@@ -110,10 +123,16 @@ $test_dest_dir/bar/3.txt->"
     verify_output "$expected_output"
 }
 
-test_shared_directory_symlinks_work() {
+test_symlinks_update_works() {
+    # We can symlink files to multiple directories by creating symlinks inside
+    # --shared-dir.
+
     new_test
 
+    # Files will get symlinks in the directory pointed to by $DEST, as well as
+    # by $ALT_DEST.
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+
     DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
 
     local expected_output
@@ -145,7 +164,7 @@ main() {
     test_update_works
     test_unlink_works
     test_unlink_does_not_overwrite_files
-    test_shared_directory_symlinks_work
+    test_symlinks_update_works
 }
 
 main
