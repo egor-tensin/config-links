@@ -62,6 +62,8 @@ add_entry() {
         local shared_path="$shared_var_dir"
         [ "$shared_var_dir" != / ] && shared_path="$shared_path/"
         shared_path="$shared_path$subpath"
+        shared_path="$( traverse_path -- "$shared_path" )"
+
         local symlink_path="$symlink_var_dir"
         [ "$symlink_var_dir" != / ] && symlink_path="$symlink_path/"
         symlink_path="$symlink_path$subpath"
