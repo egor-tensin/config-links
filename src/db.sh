@@ -62,7 +62,6 @@ add_entry() {
         local shared_path="$shared_var_dir"
         [ "$shared_var_dir" != / ] && shared_path="$shared_path/"
         shared_path="$shared_path$subpath"
-        shared_path="$( traverse_path -- "$shared_path" )"
 
         local symlink_path="$symlink_var_dir"
         [ "$symlink_var_dir" != / ] && symlink_path="$symlink_path/"
@@ -176,6 +175,7 @@ symlink_points_to_shared_file() {
     local entry
     for entry; do
         local shared_path="${shared_paths[$entry]}"
+        shared_path="$( traverse_path -- "$shared_path" )"
         local symlink_path="${symlink_paths[$entry]}"
         local target_path
         target_path="$( traverse_path -- "$symlink_path" )"
