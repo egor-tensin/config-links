@@ -27,6 +27,7 @@ new_test() {
     [ "${#FUNCNAME[@]}" -gt 1 ] && test_name="${FUNCNAME[1]}"
 
     echo
+    echo ======================================================================
     echo "New test: $test_name"
 
     test_root_dir="$( mktemp --directory )"
@@ -38,11 +39,30 @@ new_test() {
     echo "Shared directory: $test_src_dir"
     echo "%DEST% directory: $test_dest_dir"
     echo "%ALT_DEST% directory: $test_alt_dest_dir"
-    echo
+    echo ======================================================================
 
     cp -r -- "$src_dir_path" "$test_src_dir"
     cp -r -- "$dest_dir_path" "$test_dest_dir"
     cp -r -- "$dest_dir_path" "$test_alt_dest_dir"
+}
+
+call_bin_script() {
+    echo
+    echo -n 'Executing script:'
+
+    printf -- ' %q' "$@" --shared-dir "$test_src_dir"
+    printf -- '\n'
+
+    echo
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" eval "$@" --shared-dir "$test_src_dir"
+}
+
+call_update() {
+    call_bin_script "$script_dir/../bin/update.sh"
+}
+
+call_unlink() {
+    call_bin_script "$script_dir/../bin/unlink.sh"
 }
 
 verify_output() {
@@ -52,6 +72,7 @@ verify_output() {
     fi
 
     local expected_output="$1"
+    echo
     echo 'Expected directory structure:'
     echo "$expected_output"
 
@@ -59,13 +80,15 @@ verify_output() {
     [ "$#" -ge 2 ] && dest_dir="$2"
 
     actual_output="$( find "$dest_dir" -printf '%h/%f->%l\n' )"
+    echo
     echo 'Actual directory structure:'
     echo "$actual_output"
+    echo
 
     if [ "$actual_output" = "$expected_output" ]; then
-        echo "They match!"
+        echo "... They match!"
     else
-        echo "The actual directory structure does not match the expected directory structure!" >&2
+        echo "... The actual directory structure does not match the expected directory structure!" >&2
         return 1
     fi
 }
@@ -74,8 +97,7 @@ test_update_works() {
     # Basic test to make sure update.sh actually creates the proper symlinks.
 
     new_test
-
-    DEST="$test_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
@@ -93,9 +115,8 @@ test_unlink_works() {
     # Basic test to make sure unlink.sh actually removes the created symlinks.
 
     new_test
-
-    DEST="$test_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
-    DEST="$test_dest_dir" "$script_dir/../bin/unlink.sh" --shared-dir "$test_src_dir"
+    call_update
+    call_unlink
 
     local expected_output="$test_dest_dir->"
     verify_output "$expected_output"
@@ -106,14 +127,13 @@ test_unlink_does_not_overwrite_files() {
     # keeps it.
 
     new_test
-
-    DEST="$test_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
 
     # Simulate a user overwriting one of the symlinks with his own file.
     rm -- "$test_dest_dir/bar/3.txt"
     echo 'User content' > "$test_dest_dir/bar/3.txt"
 
-    DEST="$test_dest_dir" "$script_dir/../bin/unlink.sh" --shared-dir "$test_src_dir"
+    call_unlink
 
     # 3.txt must be kept:
     local expected_output="$test_dest_dir->
@@ -133,11 +153,9 @@ test_symlinks_update_works() {
     # by $ALT_DEST.
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
 
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
 
-    local expected_output
-
-    expected_output="$test_dest_dir->
+    local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
 $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
@@ -161,7 +179,7 @@ $test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt"
 }
 
 test_symlinks_unlink_works() {
-    # Test that unlink.sh works for symlinked directories inside --shared-dir.
+    # Test that unlink.sh works for directory symlinks inside --shared-dir.
 
     new_test
 
@@ -169,12 +187,10 @@ test_symlinks_unlink_works() {
     # by $ALT_DEST.
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
 
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/unlink.sh" --shared-dir "$test_src_dir"
+    call_update
+    call_unlink
 
-    local expected_output
-
-    expected_output="$test_dest_dir->"
+    local expected_output="$test_dest_dir->"
     verify_output "$expected_output"
 
     expected_output="$test_alt_dest_dir->"
@@ -185,17 +201,13 @@ test_symlinks_remove_shared_file() {
     # If we remove a shared file, both of the symlinks should be removed.
 
     new_test
-
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
-
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
     # Remove a random shared file:
     rm -- "$test_src_dir/%DEST%/bar/3.txt"
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
 
-    local expected_output
-
-    expected_output="$test_dest_dir->
+    local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
 $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
@@ -221,17 +233,13 @@ test_symlinks_remove_dir_symlink() {
     # accessible through this directory symlink should be removed.
 
     new_test
-
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
-
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
     # Remove the directory symlink:
     rm -- "$test_src_dir/%ALT_DEST%"
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$script_dir/../bin/update.sh" --shared-dir "$test_src_dir"
+    call_update
 
-    local expected_output
-
-    expected_output="$test_dest_dir->
+    local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
 $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
@@ -239,6 +247,7 @@ $test_dest_dir/bar->
 $test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
 $test_dest_dir/bar/baz->
 $test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+
     verify_output "$expected_output"
 
     expected_output="$test_alt_dest_dir->"
@@ -249,6 +258,7 @@ main() {
     test_update_works
     test_unlink_works
     test_unlink_does_not_overwrite_files
+
     test_symlinks_update_works
     test_symlinks_unlink_works
     test_symlinks_remove_shared_file
