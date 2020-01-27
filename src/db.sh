@@ -215,7 +215,7 @@ link_all_entries() {
                 is_dry_run || link_entry "$entry"
             fi
 
-        done < <( find "$shared_root_dir$shared_var_dir/" -type f -print0 )
+        done < <( find "$shared_root_dir$shared_var_dir/" -\( -type f -o -type l -\) -print0 )
     done < <( find "$shared_root_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -\( -type d -o -type l -\) -regex ".*/$var_name_regex\$" -printf '%P\0' )
 }
 
