@@ -272,6 +272,11 @@ $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     verify_output "$expected_output"
+
+    echo
+    echo 'Verifying 3_copy.txt is valid...'
+    readlink -e -- "$test_dest_dir/3_copy.txt"
+    cat "$test_dest_dir/3_copy.txt"
 }
 
 main() {
