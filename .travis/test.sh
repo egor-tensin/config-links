@@ -275,9 +275,15 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     verify_output "$expected_output"
 
     echo
-    echo 'Verifying 3_copy.txt is valid...'
-    readlink -e -- "$test_dest_dir/3_copy.txt"
-    cat -- "$test_dest_dir/3_copy.txt"
+    echo 'Verifying 3_copy.txt (the symlink) is valid...'
+
+    local copy_target
+    copy_target="$( readlink -- "$test_dest_dir/3_copy.txt" )"
+    test "$copy_target" = "$test_src_dir/%DEST%/3_copy.txt"
+
+    local copy_content
+    copy_content="$( cat -- "$test_dest_dir/3_copy.txt" )"
+    test "$copy_content" = '3'
 }
 
 test_symlink_unlink_works() {
@@ -291,9 +297,15 @@ test_symlink_unlink_works() {
     verify_output "$expected_output"
 
     echo
-    echo 'Verifying 3_copy.txt is valid...'
-    readlink -e -- "$test_src_dir/%DEST%/3_copy.txt"
-    cat -- "$test_src_dir/%DEST%/3_copy.txt"
+    echo 'Verifying 3_copy.txt (the shared file) is valid...'
+
+    local copy_target
+    copy_target="$( readlink -e -- "$test_src_dir/%DEST%/3_copy.txt" )"
+    test "$copy_target" = "$test_src_dir/%DEST%/bar/3.txt"
+
+    local copy_content
+    copy_content="$( cat -- "$test_src_dir/%DEST%/3_copy.txt" )"
+    test "$copy_content" = '3'
 }
 
 main() {
