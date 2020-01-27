@@ -258,6 +258,7 @@ test_symlink_update_works() {
     # Shared files can also be symlinks, pointing to something else.
 
     new_test
+    # Create a stupid symlink.
     ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
     call_update
 
@@ -276,7 +277,23 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     echo
     echo 'Verifying 3_copy.txt is valid...'
     readlink -e -- "$test_dest_dir/3_copy.txt"
-    cat "$test_dest_dir/3_copy.txt"
+    cat -- "$test_dest_dir/3_copy.txt"
+}
+
+test_symlink_unlink_works() {
+    new_test
+    # Create a stupid symlink.
+    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+    call_update
+    call_unlink
+
+    local expected_output="$test_dest_dir->"
+    verify_output "$expected_output"
+
+    echo
+    echo 'Verifying 3_copy.txt is valid...'
+    readlink -e -- "$test_src_dir/%DEST%/3_copy.txt"
+    cat -- "$test_src_dir/%DEST%/3_copy.txt"
 }
 
 main() {
@@ -290,6 +307,7 @@ main() {
     test_dir_symlink_remove_dir_symlink
 
     test_symlink_update_works
+    test_symlink_unlink_works
 }
 
 main
