@@ -50,11 +50,11 @@ call_bin_script() {
     echo
     echo -n 'Executing script:'
 
-    printf -- ' %q' "$@" --shared-dir "$test_src_dir"
+    printf -- ' %q' "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
     printf -- '\n'
 
     echo
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" eval "$@" --shared-dir "$test_src_dir"
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" eval "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
 }
 
 call_update() {
