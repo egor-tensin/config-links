@@ -143,7 +143,7 @@ $test_dest_dir/bar/3.txt->"
     verify_output "$expected_output"
 }
 
-test_symlinks_update_works() {
+test_dir_symlink_update_works() {
     # We can symlink files to multiple directories by creating symlinks inside
     # --shared-dir.
 
@@ -178,7 +178,7 @@ $test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
-test_symlinks_unlink_works() {
+test_dir_symlink_unlink_works() {
     # Test that unlink.sh works for directory symlinks inside --shared-dir.
 
     new_test
@@ -197,7 +197,7 @@ test_symlinks_unlink_works() {
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
-test_symlinks_remove_shared_file() {
+test_dir_symlink_remove_shared_file() {
     # If we remove a shared file, both of the symlinks should be removed.
 
     new_test
@@ -228,7 +228,7 @@ $test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
-test_symlinks_remove_dir_symlink() {
+test_dir_symlink_remove_dir_symlink() {
     # If we remove a directory symlink in --shared-dir, all the symlinks
     # accessible through this directory symlink should be removed.
 
@@ -254,15 +254,37 @@ $test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
+test_symlink_update_works() {
+    # Shared files can also be symlinks, pointing to something else.
+
+    new_test
+    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+    call_update
+
+    local expected_output="$test_dest_dir->
+$test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
+$test_dest_dir/3_copy.txt->$test_src_dir/%DEST%/3_copy.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
+$test_dest_dir/bar->
+$test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
+$test_dest_dir/bar/baz->
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+
+    verify_output "$expected_output"
+}
+
 main() {
     test_update_works
     test_unlink_works
     test_unlink_does_not_overwrite_files
 
-    test_symlinks_update_works
-    test_symlinks_unlink_works
-    test_symlinks_remove_shared_file
-    test_symlinks_remove_dir_symlink
+    test_dir_symlink_update_works
+    test_dir_symlink_unlink_works
+    test_dir_symlink_remove_shared_file
+    test_dir_symlink_remove_dir_symlink
+
+    test_symlink_update_works
 }
 
 main
