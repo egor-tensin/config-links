@@ -79,7 +79,7 @@ verify_output() {
     local dest_dir="$test_dest_dir"
     [ "$#" -ge 2 ] && dest_dir="$2"
 
-    actual_output="$( find "$dest_dir" -printf '%h/%f->%l\n' )"
+    actual_output="$( find "$dest_dir" -printf '%h/%f->%l\n' | sort )"
     echo
     echo 'Actual directory structure:'
     echo "$actual_output"
@@ -101,12 +101,12 @@ test_update_works() {
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
-$test_dest_dir/foo->
-$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
 $test_dest_dir/bar->
 $test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
 $test_dest_dir/bar/baz->
-$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     verify_output "$expected_output"
 }
@@ -157,23 +157,23 @@ test_dir_symlink_update_works() {
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
-$test_dest_dir/foo->
-$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
 $test_dest_dir/bar->
 $test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
 $test_dest_dir/bar/baz->
-$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     verify_output "$expected_output"
 
     expected_output="$test_alt_dest_dir->
 $test_alt_dest_dir/1.txt->$test_src_dir/%ALT_DEST%/1.txt
-$test_alt_dest_dir/foo->
-$test_alt_dest_dir/foo/2.txt->$test_src_dir/%ALT_DEST%/foo/2.txt
 $test_alt_dest_dir/bar->
 $test_alt_dest_dir/bar/3.txt->$test_src_dir/%ALT_DEST%/bar/3.txt
 $test_alt_dest_dir/bar/baz->
-$test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt"
+$test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt
+$test_alt_dest_dir/foo->
+$test_alt_dest_dir/foo/2.txt->$test_src_dir/%ALT_DEST%/foo/2.txt"
 
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
@@ -209,21 +209,21 @@ test_dir_symlink_remove_shared_file() {
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
-$test_dest_dir/foo->
-$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
 $test_dest_dir/bar->
 $test_dest_dir/bar/baz->
-$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     verify_output "$expected_output"
 
     expected_output="$test_alt_dest_dir->
 $test_alt_dest_dir/1.txt->$test_src_dir/%ALT_DEST%/1.txt
-$test_alt_dest_dir/foo->
-$test_alt_dest_dir/foo/2.txt->$test_src_dir/%ALT_DEST%/foo/2.txt
 $test_alt_dest_dir/bar->
 $test_alt_dest_dir/bar/baz->
-$test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt"
+$test_alt_dest_dir/bar/baz/4.txt->$test_src_dir/%ALT_DEST%/bar/baz/4.txt
+$test_alt_dest_dir/foo->
+$test_alt_dest_dir/foo/2.txt->$test_src_dir/%ALT_DEST%/foo/2.txt"
 
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
@@ -241,12 +241,12 @@ test_dir_symlink_remove_dir_symlink() {
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
-$test_dest_dir/foo->
-$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
 $test_dest_dir/bar->
 $test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
 $test_dest_dir/bar/baz->
-$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     verify_output "$expected_output"
 
@@ -264,12 +264,12 @@ test_symlink_update_works() {
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
 $test_dest_dir/3_copy.txt->$test_src_dir/%DEST%/3_copy.txt
-$test_dest_dir/foo->
-$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt
 $test_dest_dir/bar->
 $test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
 $test_dest_dir/bar/baz->
-$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt"
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     verify_output "$expected_output"
 }
