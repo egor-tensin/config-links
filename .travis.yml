@@ -1,4 +1,0 @@
-language: minimal
-os: linux
-dist: bionic
-script: ./.travis/test.sh
