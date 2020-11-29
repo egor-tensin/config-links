@@ -1,7 +1,7 @@
 Configuration file sharing
 ==========================
 
-[![Travis (.com) branch](https://img.shields.io/travis/com/egor-tensin/config-links/master?label=Travis)](https://travis-ci.com/egor-tensin/config-links)
+[![Test](https://github.com/egor-tensin/config-links/workflows/Test/badge.svg)](https://github.com/egor-tensin/config-links/actions?query=workflow%3ATest)
 
 A simple tool to help share (configuration) files across multiple machines.
 Actual files are stored in directories with names roughly matching the `%.+%`
