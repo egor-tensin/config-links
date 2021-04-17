@@ -1,7 +1,7 @@
 Configuration file sharing
 ==========================
 
-[![Test](https://github.com/egor-tensin/config-links/workflows/Test/badge.svg)](https://github.com/egor-tensin/config-links/actions?query=workflow%3ATest)
+[![Test](https://github.com/egor-tensin/config-links/actions/workflows/test.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/test.yml)
 
 A simple tool to help share (configuration) files across multiple machines.
 Actual files are stored in directories with names roughly matching the `%.+%`
