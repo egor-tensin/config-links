@@ -3,12 +3,18 @@ Configuration file sharing
 
 [![Test](https://github.com/egor-tensin/config-links/actions/workflows/test.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/test.yml)
 
-A simple tool to help share (configuration) files across multiple machines.
-Actual files are stored in directories with names roughly matching the `%.+%`
+* Store your files in a repository.
+* Checkout it on any machine.
+* Create and maintain symlinks to these files easily.
+
+How it works
+------------
+
+Actual files are stored in directories with names matching the `%VAR_NAME%`
 pattern.
 The part between the percent signs is the name of an environment variable.
-Every file in such a directory gets a symlink in the directory pointed to by
-the environment variable.
+Every file in such directory gets a symlink in the directory pointed to by the
+environment variable.
 Directory hierarchies are preserved.
 
 A database of symlinks is maintained in case a shared file is deleted (the
@@ -35,9 +41,6 @@ In this example, the symlinks to files in "../src" must appear in
 "/test/dest".
 
 ```
-> pwd
-/cygdrive/d/workspace/personal/config-links
-
 > tree /test/dest/
 /test/dest/
 
