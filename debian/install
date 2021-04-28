@@ -1,0 +1,7 @@
+LICENSE.txt usr/share/config-links
+
+README.md usr/share/doc/config-links
+
+update.sh usr/lib/config-links
+unlink.sh usr/lib/config-links
+src usr/lib/config-links

@@ -1,0 +1,14 @@
+Source: config-links
+Section: utils
+Priority: optional
+Maintainer: Egor Tensin <Egor.Tensin@gmail.com>
+Build-Depends: debhelper-compat (= 10)
+Standards-Version: 4.4.1
+Homepage: https://github.com/egor-tensin/config-links
+
+Package: config-links
+Architecture: all
+Depends: bash, ${misc:Depends}
+Description: Configuration file sharing
+ Store your files in a repository, checkout it on any machine, and easily
+ create & maintain symlinks to all of them.

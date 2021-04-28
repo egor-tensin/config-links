@@ -1,0 +1,84 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+NAME = 'Egor Tensin'
+EMAIL = 'Egor.Tensin@gmail.com'
+GPG_KEY = '3B3EF1235420917E0DB0723991D679FB92B036CB'
+UID = Process.euid
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2004"
+
+  # Weirdly enough, VirtualBox's shared folders didn't quite work for me.
+  # gbp buildpackage would just exit with FileExistsError, which doesn't
+  # happen with NFS shares.
+  config.vm.synced_folder "../", "/vagrant", type: "nfs"
+
+  config.vm.provider "libvirt" do |v|
+    v.cpus = 2
+    v.memory = 4096
+  end
+
+  # Working with the git repository:
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+git config --global user.name '#{NAME}'
+git config --global user.email '#{EMAIL}'
+  SHELL
+  config.ssh.forward_agent = true
+
+  # Set DEB* environment variables:
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+tee -a ~/.bashrc <<'EOF'
+export DEBFULLNAME='#{NAME}'
+export DEBEMAIL='#{EMAIL}'
+EOF
+  SHELL
+
+  # gpg-agent forwarding (https://wiki.gnupg.org/AgentForwarding):
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+gpg --keyserver hkp://keyserver.ubuntu.com/ --recv-keys '0x#{GPG_KEY}'
+gpg --import-ownertrust <<'EOF'
+#{GPG_KEY}:6:
+EOF
+  SHELL
+  config.vm.provision "shell", inline: <<-SHELL
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+echo 'StreamLocalBindUnlink yes' >> /etc/ssh/sshd_config
+  SHELL
+  # "agent-extra-socket" on the host.
+  local_gpg_socket = one_line(run('gpgconf', '--list-dirs', 'agent-extra-socket'))
+  # "agent-socket" on the VM.
+  remote_gpg_socket = "/run/user/#{UID}/gnupg/S.gpg-agent"
+  config.ssh.extra_args = ['-R', "#{remote_gpg_socket}:#{local_gpg_socket}"]
+
+  # Install the required packages:
+  config.vm.provision "shell", inline: <<-SHELL
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+apt-get update && apt-get install -y make
+cd /vagrant/debian && make deps
+  SHELL
+
+  config.vm.provision :reload
+end
+
+require "open3"
+
+def run(*cmd)
+  stdout, stderr, status = Open3.capture3(*cmd)
+  abort stderr unless status.success?
+  stdout
+end
+
+def one_line(output)
+  lines = output.lines.map(&:chomp)
+  abort "Must be a single line: #{lines}" unless lines.length == 1
+  lines.first
+end
