@@ -13,8 +13,9 @@ set -o pipefail
 
 script_name="$( basename -- "${BASH_SOURCE[0]}" )"
 readonly script_name
-script_dir="$( dirname -- "${BASH_SOURCE[0]}" )"
-script_dir="$( cd -- "$script_dir" && pwd )"
+script_path="$( realpath --canonicalize-existing -- "${BASH_SOURCE[0]}" )"
+readonly script_path
+script_dir="$( dirname -- "$script_path" )"
 readonly script_dir
 src_dir="$( cd -- "$script_dir/../src" && pwd )"
 readonly src_dir
