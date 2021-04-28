@@ -58,11 +58,11 @@ call_bin_script() {
 }
 
 call_update() {
-    call_bin_script "$script_dir/../bin/update.sh"
+    call_bin_script "$script_dir/../update.sh"
 }
 
 call_unlink() {
-    call_bin_script "$script_dir/../bin/unlink.sh"
+    call_bin_script "$script_dir/../unlink.sh"
 }
 
 verify_output() {

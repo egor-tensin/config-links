@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 
-# Copyright (c) 2019 Egor Tensin <Egor.Tensin@gmail.com>
+# Copyright (c) 2016 Egor Tensin <Egor.Tensin@gmail.com>
 # This file is part of the "Configuration file sharing" project.
 # For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
-# usage: ./unlink.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+# This script relies on the availability of native symlinks.
+# Those are indeed supported by NTFS, but require Administrator privileges for
+# creation.
+# It likely won't bother you as long as you don't use the functions defined in
+# this file.
+# In any case, you will see `ln` complaining about some access being denied in
+# case something goes wrong.
+#
+# Remember that in order to force `ln` to use native NTFS symlinks, your
+# `CYGWIN` Windows environment variable value **must** include either
+# `winsymlinks:native` or `winsymlinks:nativestrict`!
+
+# usage: ./update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 
 set -o errexit
 set -o nounset
@@ -17,7 +29,7 @@ script_path="$( realpath --canonicalize-existing -- "${BASH_SOURCE[0]}" )"
 readonly script_path
 script_dir="$( dirname -- "$script_path" )"
 readonly script_dir
-src_dir="$( cd -- "$script_dir/../src" && pwd )"
+src_dir="$( cd -- "$script_dir/src" && pwd )"
 readonly src_dir
 
 . "$src_dir/common.sh"
@@ -87,8 +99,10 @@ parse_script_options() {
 
 main() {
     parse_script_options "$@"
+    check_symlinks_enabled
     read_database
-    unlink_all_entries
+    unlink_obsolete_entries
+    link_all_entries
     write_database
 }
 
