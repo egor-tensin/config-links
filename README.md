@@ -1,7 +1,9 @@
-Configuration file sharing
-==========================
+Config file sharing
+===================
 
 [![Test](https://github.com/egor-tensin/config-links/actions/workflows/test.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/test.yml)
+[![Packages (Debian)](https://github.com/egor-tensin/config-links/actions/workflows/debian.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/debian.yml)
+[![Publish (Launchpad)](https://github.com/egor-tensin/config-links/actions/workflows/ppa.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/ppa.yml)
 
 * Store your files in a repository.
 * Checkout it on any machine.
@@ -22,23 +24,33 @@ corresponding symlink is then deleted too).
 The default database file name is "links.bin", maintained in the top-level
 directory with shared files.
 
-This description is obviously confusing; see the complete usage example below.
+For a complete usage example, see below.
+
+Installation
+------------
+
+* For Arch Linux, use the [AUR package].
+* For Ubuntu, use the [PPA].
+
+[AUR package]: https://aur.archlinux.org/packages/config-links/
+[PPA]: https://launchpad.net/~egor-tensin/+archive/ubuntu/config-links
 
 Usage
 -----
 
-Symlinks are managed by `update.sh`.
+Symlinks are created & maintained by `links-update`.
 
 ```
-usage: update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+usage: links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 ```
 
-Pass the `--help` flag to this script to examine its detailed usage
-information.
+To remove all symlinks, use `links-remove`.
 
-A complete usage example is given below.
-In this example, the symlinks to files in "../src" must appear in
-"/test/dest".
+```
+usage: links-remove [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+```
+
+In this example, symlinks to files in "../src" must appear in "/test/dest".
 
 ```
 > tree /test/dest/
@@ -62,7 +74,7 @@ In this example, the symlinks to files in "../src" must appear in
 > echo "$DEST"
 /test/dest
 
-> ./update.sh --shared-dir ../src/
+> ./links-update --shared-dir ../src/
 ...
 
 > tree /test/dest/
@@ -78,7 +90,7 @@ In this example, the symlinks to files in "../src" must appear in
 5 directories, 2 files
 ```
 
-For more realistic usage examples, see
+For my personal real-life usage examples, see
 
 * my [Linux/Cygwin environment],
 * configuration files for various [Windows apps].
