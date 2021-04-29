@@ -27,10 +27,10 @@ This description is obviously confusing; see the complete usage example below.
 Usage
 -----
 
-Symlinks are managed by `update.sh`.
+Symlinks are managed by `links-update`.
 
 ```
-usage: update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+usage: links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 ```
 
 Pass the `--help` flag to this script to examine its detailed usage
@@ -62,7 +62,7 @@ In this example, the symlinks to files in "../src" must appear in
 > echo "$DEST"
 /test/dest
 
-> ./update.sh --shared-dir ../src/
+> ./links-update --shared-dir ../src/
 ...
 
 > tree /test/dest/
