@@ -2,6 +2,8 @@ Configuration file sharing
 ==========================
 
 [![Test](https://github.com/egor-tensin/config-links/actions/workflows/test.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/test.yml)
+[![Packages (Debian)](https://github.com/egor-tensin/config-links/actions/workflows/debian.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/debian.yml)
+[![Publish (Launchpad)](https://github.com/egor-tensin/config-links/actions/workflows/ppa.yml/badge.svg)](https://github.com/egor-tensin/config-links/actions/workflows/ppa.yml)
 
 * Store your files in a repository.
 * Checkout it on any machine.
