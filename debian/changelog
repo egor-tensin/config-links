@@ -1,3 +1,15 @@
+config-links (1.0-1) unstable; urgency=medium
+
+  * debian: require bash 4 or higher
+  * rename the scripts
+  * README: add more badges
+  * README: update
+  * README: add "Installation"
+  * rename the project
+  * debian: scripts were renamed
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Thu, 29 Apr 2021 08:35:34 +0000
+
 config-links (0.2-1) unstable; urgency=medium
 
   * debian: add GitHub workflows
