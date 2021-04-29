@@ -1,5 +1,5 @@
 # Copyright (c) 2016 Egor Tensin <Egor.Tensin@gmail.com>
-# This file is part of the "Configuration file sharing" project.
+# This file is part of the "Config file sharing" project.
 # For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
