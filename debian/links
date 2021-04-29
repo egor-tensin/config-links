@@ -1,2 +1,2 @@
-usr/lib/config-links/update.sh usr/bin/links-update
-usr/lib/config-links/unlink.sh usr/bin/links-remove
+usr/lib/config-links/links-update usr/bin/links-update
+usr/lib/config-links/links-remove usr/bin/links-remove
