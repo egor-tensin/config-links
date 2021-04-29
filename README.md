@@ -31,6 +31,7 @@ Installation
 
 * For Arch Linux, use the [AUR package].
 * For Ubuntu, use the [PPA].
+* Alternatively, just checkout this repository.
 
 [AUR package]: https://aur.archlinux.org/packages/config-links/
 [PPA]: https://launchpad.net/~egor-tensin/+archive/ubuntu/config-links
