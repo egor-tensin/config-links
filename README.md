@@ -24,23 +24,24 @@ corresponding symlink is then deleted too).
 The default database file name is "links.bin", maintained in the top-level
 directory with shared files.
 
-This description is obviously confusing; see the complete usage example below.
+For a complete usage example, see below.
 
 Usage
 -----
 
-Symlinks are managed by `links-update`.
+Symlinks are created & maintained by `links-update`.
 
 ```
 usage: links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 ```
 
-Pass the `--help` flag to this script to examine its detailed usage
-information.
+To remove all symlinks, use `links-remove`.
 
-A complete usage example is given below.
-In this example, the symlinks to files in "../src" must appear in
-"/test/dest".
+```
+usage: links-remove [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+```
+
+In this example, symlinks to files in "../src" must appear in "/test/dest".
 
 ```
 > tree /test/dest/
@@ -80,7 +81,7 @@ In this example, the symlinks to files in "../src" must appear in
 5 directories, 2 files
 ```
 
-For more realistic usage examples, see
+For my personal real-life usage examples, see
 
 * my [Linux/Cygwin environment],
 * configuration files for various [Windows apps].
