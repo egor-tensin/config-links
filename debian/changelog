@@ -1,3 +1,9 @@
+config-links (1.0-2) unstable; urgency=medium
+
+  * debian: fix package description
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Thu, 29 Apr 2021 10:15:54 +0000
+
 config-links (1.0-1) unstable; urgency=medium
 
   * debian: require bash 4 or higher
