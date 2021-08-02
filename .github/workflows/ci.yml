@@ -13,4 +13,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: ./.ci/test.sh
+        run: ./test/test.sh
