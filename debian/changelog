@@ -1,3 +1,16 @@
+config-links (1.0.1-1) unstable; urgency=medium
+
+  * README: update
+  * workflows/test: tweak step names
+  * workflows/test: use ubuntu-latest
+  * workflows/test -> workflows/ci
+  * workflows/ci: rename to "CI"
+  * .ci/ -> test/
+  * debian/Makefile: apt scripting best practices
+  * debian/README: update
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Sun, 03 Oct 2021 16:20:54 +0000
+
 config-links (1.0-2) unstable; urgency=medium
 
   * debian: fix package description
