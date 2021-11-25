@@ -42,7 +42,7 @@ Usage
 Symlinks are created & maintained by `links-update`.
 
 ```
-usage: links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+usage: links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-m|--mode MODE] [-n|--dry-run]
 ```
 
 To remove all symlinks, use `links-remove`.
