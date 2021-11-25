@@ -83,6 +83,7 @@ verify_output() {
     local dest_dir="$test_dest_dir"
     [ "$#" -ge 2 ] && dest_dir="$2"
 
+    local actual_output
     actual_output="$( find "$dest_dir" -printf '%h/%f->%l\n' | sort )"
     echo
     echo 'Actual directory structure:'
