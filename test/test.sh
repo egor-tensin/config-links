@@ -58,7 +58,7 @@ call_bin_script() {
 }
 
 call_update() {
-    call_bin_script "$script_dir/../links-update"
+    call_bin_script "$script_dir/../links-update" "$@"
 }
 
 call_unlink() {
@@ -94,6 +94,33 @@ verify_output() {
         echo "... They match!"
     else
         echo "... The actual directory structure does not match the expected directory structure!" >&2
+        return 1
+    fi
+}
+
+verify_mode() {
+    if [ "$#" -ne 2 ]; then
+        echo "usage: ${FUNCNAME[0]} EXPECTED_MODE FILE" >&2
+        return 1
+    fi
+
+    local expected_mode="$1"
+    local path="$2"
+
+    echo
+    echo "Checking permissions for file: $path"
+    echo "Expected mode: $expected_mode"
+
+    local actual_mode
+    actual_mode="$( stat -c '%a' -- "$path" )"
+    actual_mode="0$actual_mode"
+
+    echo "Actual mode: $actual_mode"
+
+    if [ "$actual_mode" = "$expected_mode" ]; then
+        echo "... They match!"
+    else
+        echo "... They don't match."
         return 1
     fi
 }
@@ -331,20 +358,28 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     echo
     echo 'Verifying 1.txt (the shared file) permissions...'
 
-    local mode
-
-    mode="$( stat -c '%a' -- "$test_src_dir/%DEST%/1.txt" )"
-    echo "Actual permissions: $mode"
-    test "$mode" = '644'
-
+    verify_mode 0644 "$test_src_dir/%DEST%/1.txt"
     call_chmod --mode 0600
+    verify_mode 0600 "$test_src_dir/%DEST%/1.txt"
+}
 
-    echo
-    echo 'Verifying 1.txt (the shared file) permissions have changed...'
+test_update_chmod() {
+    # Test that links-update --mode works.
+    new_test
+    local expected_mode='0622'
+    call_update --mode "$expected_mode"
 
-    mode="$( stat -c '%a' -- "$test_src_dir/%DEST%/1.txt" )"
-    echo "Actual permissions: $mode"
-    test "$mode" = '600'
+    local expected_output="$test_dest_dir->
+$test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
+$test_dest_dir/bar->
+$test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
+$test_dest_dir/bar/baz->
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
+    verify_output "$expected_output"
+
+    verify_mode "$expected_mode" "$test_src_dir/%DEST%/1.txt"
 }
 
 main() {
@@ -361,6 +396,7 @@ main() {
     test_symlink_unlink_works
 
     test_chmod_works
+    test_update_chmod
 }
 
 main

@@ -17,7 +17,7 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+# usage: ./links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-m|--mode MODE] [-n|--dry-run]
 
 set -o errexit
 set -o nounset
@@ -32,6 +32,8 @@ readonly script_dir
 src_dir="$( cd -- "$script_dir/src" && pwd )"
 readonly src_dir
 
+mode=''
+
 . "$src_dir/common.sh"
 . "$src_dir/os.sh"
 . "$src_dir/path.sh"
@@ -44,11 +46,12 @@ script_usage() {
         echo "$script_name: $msg"
     done
 
-    echo "usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+    echo "usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-m|--mode MODE] [-n|--dry-run]
   -h,--help          show this message and exit
   -d,--database      set database file path
   -s,--shared-dir    set top-level shared directory path
                      (current working directory by default)
+  -m,--mode          shared files mode (as in chmod)
   -n,--dry-run       don't actually do anything intrusive"
 }
 
@@ -66,7 +69,7 @@ parse_script_options() {
                 set_dry_run
                 continue
                 ;;
-            -d|--database|-s|--shared-dir)
+            -d|--database|-s|--shared-dir|-m|--mode)
                 ;;
             *)
                 script_usage "unrecognized parameter: $key" >&2
@@ -89,6 +92,9 @@ parse_script_options() {
             -s|--shared-dir)
                 update_shared_dir "$value"
                 ;;
+            -m|--mode)
+                mode="$value"
+                ;;
             *)
                 script_usage "unrecognized parameter: $key" >&2
                 exit 1
@@ -103,6 +109,7 @@ main() {
     read_database
     unlink_obsolete_entries
     link_all_entries
+    test -n "$mode" && chmod_entries "$mode"
     write_database
 }
 
