@@ -58,11 +58,15 @@ call_bin_script() {
 }
 
 call_update() {
-    call_bin_script "$script_dir/../links-update"
+    call_bin_script "$script_dir/../links-update" "$@"
 }
 
 call_unlink() {
     call_bin_script "$script_dir/../links-remove"
+}
+
+call_chmod() {
+    call_bin_script "$script_dir/../links-chmod" "$@"
 }
 
 verify_output() {
@@ -79,6 +83,7 @@ verify_output() {
     local dest_dir="$test_dest_dir"
     [ "$#" -ge 2 ] && dest_dir="$2"
 
+    local actual_output
     actual_output="$( find "$dest_dir" -printf '%h/%f->%l\n' | sort )"
     echo
     echo 'Actual directory structure:'
@@ -89,6 +94,33 @@ verify_output() {
         echo "... They match!"
     else
         echo "... The actual directory structure does not match the expected directory structure!" >&2
+        return 1
+    fi
+}
+
+verify_mode() {
+    if [ "$#" -ne 2 ]; then
+        echo "usage: ${FUNCNAME[0]} EXPECTED_MODE FILE" >&2
+        return 1
+    fi
+
+    local expected_mode="$1"
+    local path="$2"
+
+    echo
+    echo "Checking permissions for file: $path"
+    echo "Expected mode: $expected_mode"
+
+    local actual_mode
+    actual_mode="$( stat -c '%a' -- "$path" )"
+    actual_mode="0$actual_mode"
+
+    echo "Actual mode: $actual_mode"
+
+    if [ "$actual_mode" = "$expected_mode" ]; then
+        echo "... They match!"
+    else
+        echo "... They don't match."
         return 1
     fi
 }
@@ -308,6 +340,48 @@ test_symlink_unlink_works() {
     test "$copy_content" = '3'
 }
 
+test_chmod_works() {
+    # Test that links-chmod works.
+    new_test
+    call_update
+
+    local expected_output="$test_dest_dir->
+$test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
+$test_dest_dir/bar->
+$test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
+$test_dest_dir/bar/baz->
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
+    verify_output "$expected_output"
+
+    echo
+    echo 'Verifying 1.txt (the shared file) permissions...'
+
+    verify_mode 0644 "$test_src_dir/%DEST%/1.txt"
+    call_chmod --mode 0600
+    verify_mode 0600 "$test_src_dir/%DEST%/1.txt"
+}
+
+test_update_chmod() {
+    # Test that links-update --mode works.
+    new_test
+    local expected_mode='0622'
+    call_update --mode "$expected_mode"
+
+    local expected_output="$test_dest_dir->
+$test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
+$test_dest_dir/bar->
+$test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
+$test_dest_dir/bar/baz->
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
+    verify_output "$expected_output"
+
+    verify_mode "$expected_mode" "$test_src_dir/%DEST%/1.txt"
+}
+
 main() {
     test_update_works
     test_unlink_works
@@ -320,6 +394,9 @@ main() {
 
     test_symlink_update_works
     test_symlink_unlink_works
+
+    test_chmod_works
+    test_update_chmod
 }
 
 main
