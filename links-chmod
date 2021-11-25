@@ -37,8 +37,8 @@ script_usage() {
   -d,--database      set database file path
   -s,--shared-dir    set top-level shared directory path
                      (current working directory by default)
-  -n,--dry-run       don't actually do anything intrusive
-  -m,--mode          shared files mode (as in chmod)"
+  -m,--mode          shared files mode (as in chmod)
+  -n,--dry-run       don't actually do anything intrusive"
 }
 
 parse_script_options() {
