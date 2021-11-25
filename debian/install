@@ -4,4 +4,5 @@ README.md usr/share/doc/config-links
 
 links-update usr/lib/config-links
 links-remove usr/lib/config-links
+links-chmod  usr/lib/config-links
 src usr/lib/config-links
