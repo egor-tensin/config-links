@@ -262,3 +262,17 @@ unlink_obsolete_entries() {
         fi
     done
 }
+
+chmod_entries() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} MODE" >&2
+        return 1
+    fi
+
+    local mode="$1"
+    shift
+
+    if [ "${#shared_paths[@]}" -ne 0 ]; then
+        is_dry_run || chmod -- "$mode" ${shared_paths[@]+"${shared_paths[@]}"}
+    fi
+}

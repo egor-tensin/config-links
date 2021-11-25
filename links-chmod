@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+# Copyright (c) 2021 Egor Tensin <Egor.Tensin@gmail.com>
+# This file is part of the "Config file sharing" project.
+# For details, see https://github.com/egor-tensin/config-links.
+# Distributed under the MIT License.
+
+# usage: ./links-chmod [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-m|--mode MODE] [-n|--dry-run]
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+script_name="$( basename -- "${BASH_SOURCE[0]}" )"
+readonly script_name
+script_path="$( realpath --canonicalize-existing -- "${BASH_SOURCE[0]}" )"
+readonly script_path
+script_dir="$( dirname -- "$script_path" )"
+readonly script_dir
+src_dir="$( cd -- "$script_dir/src" && pwd )"
+readonly src_dir
+
+. "$src_dir/common.sh"
+. "$src_dir/os.sh"
+. "$src_dir/path.sh"
+. "$src_dir/vars.sh"
+. "$src_dir/db.sh"
+
+script_usage() {
+    local msg
+    for msg; do
+        echo "$script_name: $msg"
+    done
+
+    echo "usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+  -h,--help          show this message and exit
+  -d,--database      set database file path
+  -s,--shared-dir    set top-level shared directory path
+                     (current working directory by default)
+  -n,--dry-run       don't actually do anything intrusive
+  -m,--mode          shared files mode (as in chmod)"
+}
+
+parse_script_options() {
+    while [ "$#" -gt 0 ]; do
+        local key="$1"
+        shift
+
+        case "$key" in
+            -h|--help)
+                script_usage
+                exit 0
+                ;;
+            -n|--dry-run)
+                set_dry_run
+                continue
+                ;;
+            -d|--database|-s|--shared-dir|-m|--mode)
+                ;;
+            *)
+                script_usage "unrecognized parameter: $key" >&2
+                exit 1
+                ;;
+        esac
+
+        if [ "$#" -eq 0 ]; then
+            script_usage "missing argument for parameter: $key" >&2
+            exit 1
+        fi
+
+        local value="$1"
+        shift
+
+        case "$key" in
+            -d|--database)
+                update_database_path "$value"
+                ;;
+            -s|--shared-dir)
+                update_shared_dir "$value"
+                ;;
+            -m|--mode)
+                mode="$value"
+                ;;
+            *)
+                script_usage "unrecognized parameter: $key" >&2
+                exit 1
+                ;;
+        esac
+    done
+}
+
+main() {
+    parse_script_options "$@"
+    read_database
+    chmod_entries "$mode"
+}
+
+main "$@"

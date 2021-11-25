@@ -65,6 +65,10 @@ call_unlink() {
     call_bin_script "$script_dir/../links-remove"
 }
 
+call_chmod() {
+    call_bin_script "$script_dir/../links-chmod" "$@"
+}
+
 verify_output() {
     if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
         echo "usage: ${FUNCNAME[0]} EXPECTED_OUTPUT [DEST_DIR]" >&2
@@ -308,6 +312,40 @@ test_symlink_unlink_works() {
     test "$copy_content" = '3'
 }
 
+test_chmod_works() {
+    # Test that links-chmod works.
+    new_test
+    call_update
+
+    local expected_output="$test_dest_dir->
+$test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
+$test_dest_dir/bar->
+$test_dest_dir/bar/3.txt->$test_src_dir/%DEST%/bar/3.txt
+$test_dest_dir/bar/baz->
+$test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
+$test_dest_dir/foo->
+$test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
+    verify_output "$expected_output"
+
+    echo
+    echo 'Verifying 1.txt (the shared file) permissions...'
+
+    local mode
+
+    mode="$( stat -c '%a' -- "$test_src_dir/%DEST%/1.txt" )"
+    echo "Actual permissions: $mode"
+    test "$mode" = '644'
+
+    call_chmod --mode 0600
+
+    echo
+    echo 'Verifying 1.txt (the shared file) permissions have changed...'
+
+    mode="$( stat -c '%a' -- "$test_src_dir/%DEST%/1.txt" )"
+    echo "Actual permissions: $mode"
+    test "$mode" = '600'
+}
+
 main() {
     test_update_works
     test_unlink_works
@@ -320,6 +358,8 @@ main() {
 
     test_symlink_update_works
     test_symlink_unlink_works
+
+    test_chmod_works
 }
 
 main
