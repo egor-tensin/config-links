@@ -5,7 +5,7 @@
 # For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
-# usage: ./unlink.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+# usage: ./links-remove [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 
 set -o errexit
 set -o nounset

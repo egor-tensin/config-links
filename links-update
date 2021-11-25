@@ -17,7 +17,7 @@
 # `CYGWIN` Windows environment variable value **must** include either
 # `winsymlinks:native` or `winsymlinks:nativestrict`!
 
-# usage: ./update.sh [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+# usage: ./links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 
 set -o errexit
 set -o nounset
