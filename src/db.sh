@@ -263,6 +263,23 @@ unlink_obsolete_entries() {
     done
 }
 
+parse_mode() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} MODE" >&2
+        return 1
+    fi
+
+    local mode="$1"
+    shift
+
+    if [ -z "$mode" ]; then
+        dump "mode cannot be empty" >&2
+        return 1
+    fi
+
+    echo "$mode"
+}
+
 chmod_entries() {
     if [ "$#" -ne 1 ]; then
         echo "usage: ${FUNCNAME[0]} MODE" >&2

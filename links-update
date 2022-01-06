@@ -32,8 +32,6 @@ readonly script_dir
 src_dir="$( cd -- "$script_dir/src" && pwd )"
 readonly src_dir
 
-mode=''
-
 . "$src_dir/common.sh"
 . "$src_dir/os.sh"
 . "$src_dir/path.sh"
@@ -93,7 +91,7 @@ parse_script_options() {
                 update_shared_dir "$value"
                 ;;
             -m|--mode)
-                mode="$value"
+                mode="$( parse_mode "$value" )"
                 ;;
             *)
                 script_usage "unrecognized parameter: $key" >&2
@@ -102,6 +100,8 @@ parse_script_options() {
         esac
     done
 }
+
+mode=''
 
 main() {
     parse_script_options "$@"

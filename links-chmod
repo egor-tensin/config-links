@@ -79,7 +79,7 @@ parse_script_options() {
                 update_shared_dir "$value"
                 ;;
             -m|--mode)
-                mode="$value"
+                mode="$( parse_mode "$value" )"
                 ;;
             *)
                 script_usage "unrecognized parameter: $key" >&2
