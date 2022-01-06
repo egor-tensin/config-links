@@ -1,3 +1,11 @@
+config-links (2.0-1) unstable; urgency=medium
+
+  * db.sh: consistent logging
+  * db.sh: add parse_mode function
+  * links-chmod: mode parameter is mandatory
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Thu, 06 Jan 2022 17:32:23 +0000
+
 config-links (1.1-2) unstable; urgency=medium
 
   * debian: add links-chmod
