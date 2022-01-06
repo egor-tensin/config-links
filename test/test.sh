@@ -359,7 +359,7 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     echo 'Verifying 1.txt (the shared file) permissions...'
 
     verify_mode 0644 "$test_src_dir/%DEST%/1.txt"
-    call_chmod --mode 0600
+    call_chmod 0600
     verify_mode 0600 "$test_src_dir/%DEST%/1.txt"
 }
 

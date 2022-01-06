@@ -5,7 +5,7 @@
 # For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
-# usage: ./links-chmod [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-m|--mode MODE] [-n|--dry-run]
+# usage: ./links-chmod [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run] MODE
 
 set -o errexit
 set -o nounset
@@ -32,16 +32,18 @@ script_usage() {
         echo "$script_name: $msg"
     done
 
-    echo "usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
+    echo "usage: $script_name [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run] MODE
+  MODE               shared files mode (as in chmod)
   -h,--help          show this message and exit
   -d,--database      set database file path
   -s,--shared-dir    set top-level shared directory path
                      (current working directory by default)
-  -m,--mode          shared files mode (as in chmod)
   -n,--dry-run       don't actually do anything intrusive"
 }
 
 parse_script_options() {
+    local -a args=()
+
     while [ "$#" -gt 0 ]; do
         local key="$1"
         shift
@@ -55,11 +57,18 @@ parse_script_options() {
                 set_dry_run
                 continue
                 ;;
-            -d|--database|-s|--shared-dir|-m|--mode)
+            -d|--database|-s|--shared-dir)
                 ;;
-            *)
+            --)
+                break
+                ;;
+            -*)
                 script_usage "unrecognized parameter: $key" >&2
                 exit 1
+                ;;
+            *)
+                args+=("$key")
+                continue
                 ;;
         esac
 
@@ -78,16 +87,24 @@ parse_script_options() {
             -s|--shared-dir)
                 update_shared_dir "$value"
                 ;;
-            -m|--mode)
-                mode="$( parse_mode "$value" )"
-                ;;
             *)
                 script_usage "unrecognized parameter: $key" >&2
                 exit 1
                 ;;
         esac
     done
+
+    args+=("$@")
+
+    if [ "${#args[@]}" -ne 1 ]; then
+        script_usage "missing parameter MODE" >&2
+        exit 1
+    fi
+
+    mode="$( parse_mode "${args[0]}" )"
 }
+
+mode=''
 
 main() {
     parse_script_options "$@"
