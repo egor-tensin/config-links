@@ -263,6 +263,23 @@ unlink_obsolete_entries() {
     done
 }
 
+parse_mode() {
+    if [ "$#" -ne 1 ]; then
+        echo "usage: ${FUNCNAME[0]} MODE" >&2
+        return 1
+    fi
+
+    local mode="$1"
+    shift
+
+    if [ -z "$mode" ]; then
+        dump "mode cannot be empty" >&2
+        return 1
+    fi
+
+    echo "$mode"
+}
+
 chmod_entries() {
     if [ "$#" -ne 1 ]; then
         echo "usage: ${FUNCNAME[0]} MODE" >&2
@@ -272,7 +289,7 @@ chmod_entries() {
     local mode="$1"
     shift
 
-    echo "Applying mode $mode to shared files..."
+    dump "applying mode $mode to shared files..."
     if [ "${#shared_paths[@]}" -ne 0 ]; then
         is_dry_run || chmod -- "$mode" ${shared_paths[@]+"${shared_paths[@]}"}
     fi
