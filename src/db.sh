@@ -272,7 +272,7 @@ chmod_entries() {
     local mode="$1"
     shift
 
-    echo "Applying mode $mode to shared files..."
+    dump "applying mode $mode to shared files..."
     if [ "${#shared_paths[@]}" -ne 0 ]; then
         is_dry_run || chmod -- "$mode" ${shared_paths[@]+"${shared_paths[@]}"}
     fi
