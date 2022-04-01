@@ -176,6 +176,26 @@ $test_dest_dir/bar/3.txt->"
     verify_output "$expected_output"
 }
 
+test_unlink_does_not_delete_used_dirs() {
+    # Check that if a user adds a file to a destination directory, it's not
+    # deleted when unlinking.
+
+    new_test
+    call_update
+
+    # User adds his own file to the directory:
+    echo 'User content' > "$test_dest_dir/bar/my-file"
+
+    call_unlink
+
+    # bar/ and bar/my-file must be kept:
+    local expected_output="$test_dest_dir->
+$test_dest_dir/bar->
+$test_dest_dir/bar/my-file->"
+
+    verify_output "$expected_output"
+}
+
 new_test_dir_symlink() {
     new_test "${FUNCNAME[1]}"
 
@@ -392,6 +412,7 @@ main() {
     test_update_works
     test_unlink_works
     test_unlink_does_not_overwrite_files
+    test_unlink_does_not_delete_used_dirs
 
     test_dir_symlink_update_works
     test_dir_symlink_unlink_works
