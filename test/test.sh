@@ -25,6 +25,7 @@ test_alt_dest_dir=
 new_test() {
     local test_name=
     [ "${#FUNCNAME[@]}" -gt 1 ] && test_name="${FUNCNAME[1]}"
+    [ "$#" -gt 0 ] && test_name="$1"
 
     echo
     echo ======================================================================
@@ -175,16 +176,19 @@ $test_dest_dir/bar/3.txt->"
     verify_output "$expected_output"
 }
 
-test_dir_symlink_update_works() {
-    # We can symlink files to multiple directories by creating symlinks inside
-    # --shared-dir.
-
-    new_test
+new_test_dir_symlink() {
+    new_test "${FUNCNAME[1]}"
 
     # Files will get symlinks in the directory pointed to by $DEST, as well as
     # by $ALT_DEST.
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+}
 
+test_dir_symlink_update_works() {
+    # We can symlink files to multiple directories by creating symlinks inside
+    # --shared-dir.
+
+    new_test_dir_symlink
     call_update
 
     local expected_output="$test_dest_dir->
@@ -213,12 +217,7 @@ $test_alt_dest_dir/foo/2.txt->$test_src_dir/%ALT_DEST%/foo/2.txt"
 test_dir_symlink_unlink_works() {
     # Test that unlink.sh works for directory symlinks inside --shared-dir.
 
-    new_test
-
-    # Files will get symlinks in the directory pointed to by $DEST, as well as
-    # by $ALT_DEST.
-    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
-
+    new_test_dir_symlink
     call_update
     call_unlink
 
@@ -232,9 +231,9 @@ test_dir_symlink_unlink_works() {
 test_dir_symlink_remove_shared_file() {
     # If we remove a shared file, both of the symlinks should be removed.
 
-    new_test
-    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+    new_test_dir_symlink
     call_update
+
     # Remove a random shared file:
     rm -- "$test_src_dir/%DEST%/bar/3.txt"
     call_update
@@ -264,9 +263,9 @@ test_dir_symlink_remove_dir_symlink() {
     # If we remove a directory symlink in --shared-dir, all the symlinks
     # accessible through this directory symlink should be removed.
 
-    new_test
-    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+    new_test_dir_symlink
     call_update
+
     # Remove the directory symlink:
     rm -- "$test_src_dir/%ALT_DEST%"
     call_update
@@ -286,12 +285,17 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
+new_test_symlink() {
+    new_test "${FUNCNAME[1]}"
+
+    # Create a stupid symlink.
+    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+}
+
 test_symlink_update_works() {
     # Shared files can also be symlinks, pointing to something else.
 
-    new_test
-    # Create a stupid symlink.
-    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+    new_test_symlink
     call_update
 
     local expected_output="$test_dest_dir->
@@ -319,9 +323,9 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 }
 
 test_symlink_unlink_works() {
-    new_test
-    # Create a stupid symlink.
-    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+    # Verify that unlinking doesn't delete the shared symlinks.
+
+    new_test_symlink
     call_update
     call_unlink
 
@@ -342,6 +346,7 @@ test_symlink_unlink_works() {
 
 test_chmod_works() {
     # Test that links-chmod works.
+
     new_test
     call_update
 
@@ -365,6 +370,7 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
 test_update_chmod() {
     # Test that links-update --mode works.
+
     new_test
     local expected_mode='0622'
     call_update --mode "$expected_mode"
