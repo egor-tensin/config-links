@@ -57,7 +57,7 @@ add_entry() {
         local shared_var_dir="$shared_root_dir%$var_name%"
         local symlink_var_dir
         symlink_var_dir="$( resolve_variable "$var_name" )"
-        local subpath="${entry#%$var_name%/}"
+        local subpath="${entry#%"$var_name"%/}"
 
         local shared_path="$shared_var_dir"
         [ "$shared_var_dir" != / ] && shared_path="$shared_path/"
@@ -134,7 +134,7 @@ delete_obsolete_dirs() {
 
     [ "$base_dir" = "$dir" ] && return 0
 
-    local subpath="${dir##$base_dir/}"
+    local subpath="${dir##"$base_dir"/}"
 
     if [ "$subpath" = "$dir" ]; then
         dump "base directory: $base_dir"    >&2
@@ -193,10 +193,18 @@ shared_file_present() {
 
 link_all_entries() {
     local shared_var_dir
+
+    find "$shared_root_dir" \
+        -mindepth 1 -maxdepth 1 \
+        -\( -type d -o -type l -\) \
+        -regextype posix-basic \
+        -regex ".*/$var_name_regex\$" \
+        -printf '%P\0' |
     while IFS= read -d '' -r shared_var_dir; do
         dump "shared directory: $shared_root_dir$shared_var_dir"
-
         local shared_path
+
+        find "$shared_root_dir$shared_var_dir/" -\( -type f -o -type l -\) -print0 |
         while IFS= read -d '' -r shared_path; do
             dump "    shared file path: $shared_path"
             local entry="${shared_path:${#shared_root_dir}}"
@@ -214,9 +222,8 @@ link_all_entries() {
                 dump '    ... adding a symlink'
                 is_dry_run || link_entry "$entry"
             fi
-
-        done < <( find "$shared_root_dir$shared_var_dir/" -\( -type f -o -type l -\) -print0 )
-    done < <( find "$shared_root_dir" -regextype posix-basic -mindepth 1 -maxdepth 1 -\( -type d -o -type l -\) -regex ".*/$var_name_regex\$" -printf '%P\0' )
+        done
+    done
 }
 
 unlink_all_entries() {

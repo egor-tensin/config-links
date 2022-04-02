@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -o errexit -o nounset -o pipefail
+shopt -s inherit_errexit lastpipe
 
 script_dir="$( dirname -- "${BASH_SOURCE[0]}" )"
 script_dir="$( cd -- "$script_dir" && pwd )"
@@ -55,7 +56,7 @@ call_bin_script() {
     printf -- '\n'
 
     echo
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" eval "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
 }
 
 call_update() {

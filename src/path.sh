@@ -76,7 +76,7 @@ traverse_path() {
     local -a abs_paths=()
 
     local path
-    while IFS= read -d '' -r path; do
+    readlink -z --canonicalize-missing -- ${paths[@]+"${paths[@]}"} | while IFS= read -d '' -r path; do
         if [ -n "$must_exist" ] && [ ! -e "$path" ]; then
             dump "must exist: $path" >&2
             return 1
@@ -88,7 +88,7 @@ traverse_path() {
         fi
 
         abs_paths+=("$path")
-    done < <( readlink -z --canonicalize-missing -- ${paths[@]+"${paths[@]}"} )
+    done
 
     printf -- "$fmt" ${abs_paths[@]+"${abs_paths[@]}"}
 }
