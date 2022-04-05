@@ -7,9 +7,8 @@
 
 # usage: ./links-remove [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 
-set -o errexit
-set -o nounset
-set -o pipefail
+set -o errexit -o nounset -o pipefail
+shopt -s inherit_errexit lastpipe
 
 script_name="$( basename -- "${BASH_SOURCE[0]}" )"
 readonly script_name

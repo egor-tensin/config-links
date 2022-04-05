@@ -93,10 +93,10 @@ In this example, symlinks to files in "../src" must appear in "/test/dest".
 
 For my personal real-life usage examples, see
 
-* my [Linux/Cygwin environment],
+* [my dotfiles],
 * configuration files for various [Windows apps].
 
-[Linux/Cygwin environment]: https://github.com/egor-tensin/linux-home
+[my dotfiles]: https://github.com/egor-tensin/linux-home
 [Windows apps]: https://github.com/egor-tensin/windows-home
 
 Limitations

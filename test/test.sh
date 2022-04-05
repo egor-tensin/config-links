@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -o errexit -o nounset -o pipefail
+shopt -s inherit_errexit lastpipe
 
 script_dir="$( dirname -- "${BASH_SOURCE[0]}" )"
 script_dir="$( cd -- "$script_dir" && pwd )"
@@ -25,6 +26,7 @@ test_alt_dest_dir=
 new_test() {
     local test_name=
     [ "${#FUNCNAME[@]}" -gt 1 ] && test_name="${FUNCNAME[1]}"
+    [ "$#" -gt 0 ] && test_name="$1"
 
     echo
     echo ======================================================================
@@ -54,14 +56,14 @@ call_bin_script() {
     printf -- '\n'
 
     echo
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" eval "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
 }
 
 call_update() {
     call_bin_script "$script_dir/../links-update" "$@"
 }
 
-call_unlink() {
+call_remove() {
     call_bin_script "$script_dir/../links-remove"
 }
 
@@ -126,7 +128,8 @@ verify_mode() {
 }
 
 test_update_works() {
-    # Basic test to make sure update.sh actually creates the proper symlinks.
+    # Basic test to make sure that links-update actually creates the proper
+    # symlinks.
 
     new_test
     call_update
@@ -143,19 +146,20 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     verify_output "$expected_output"
 }
 
-test_unlink_works() {
-    # Basic test to make sure unlink.sh actually removes the created symlinks.
+test_remove_works() {
+    # Basic test to make sure links-remove actually removes the created
+    # symlinks.
 
     new_test
     call_update
-    call_unlink
+    call_remove
 
     local expected_output="$test_dest_dir->"
     verify_output "$expected_output"
 }
 
-test_unlink_does_not_overwrite_files() {
-    # Check that if a user overwrites a symlink with his own file, unlink.sh
+test_remove_does_not_overwrite_files() {
+    # Check that if a user overwrites a symlink with his own file, links-remove
     # keeps it.
 
     new_test
@@ -165,7 +169,7 @@ test_unlink_does_not_overwrite_files() {
     rm -- "$test_dest_dir/bar/3.txt"
     echo 'User content' > "$test_dest_dir/bar/3.txt"
 
-    call_unlink
+    call_remove
 
     # 3.txt must be kept:
     local expected_output="$test_dest_dir->
@@ -175,16 +179,39 @@ $test_dest_dir/bar/3.txt->"
     verify_output "$expected_output"
 }
 
-test_dir_symlink_update_works() {
-    # We can symlink files to multiple directories by creating symlinks inside
-    # --shared-dir.
+test_remove_does_not_delete_used_dirs() {
+    # Check that if a user adds a file to a destination directory, it's not
+    # deleted by links-remove.
 
     new_test
+    call_update
+
+    # User adds his own file to the directory:
+    echo 'User content' > "$test_dest_dir/bar/my-file"
+
+    call_remove
+
+    # bar/ and bar/my-file must be kept:
+    local expected_output="$test_dest_dir->
+$test_dest_dir/bar->
+$test_dest_dir/bar/my-file->"
+
+    verify_output "$expected_output"
+}
+
+new_test_dir_symlink() {
+    new_test "${FUNCNAME[1]}"
 
     # Files will get symlinks in the directory pointed to by $DEST, as well as
     # by $ALT_DEST.
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+}
 
+test_dir_symlink_update_works() {
+    # We can symlink files to multiple directories by creating symlinks inside
+    # --shared-dir.
+
+    new_test_dir_symlink
     call_update
 
     local expected_output="$test_dest_dir->
@@ -210,17 +237,12 @@ $test_alt_dest_dir/foo/2.txt->$test_src_dir/%ALT_DEST%/foo/2.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
-test_dir_symlink_unlink_works() {
-    # Test that unlink.sh works for directory symlinks inside --shared-dir.
+test_dir_symlink_remove_works() {
+    # Test that links-remove works for directory symlinks inside --shared-dir.
 
-    new_test
-
-    # Files will get symlinks in the directory pointed to by $DEST, as well as
-    # by $ALT_DEST.
-    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
-
+    new_test_dir_symlink
     call_update
-    call_unlink
+    call_remove
 
     local expected_output="$test_dest_dir->"
     verify_output "$expected_output"
@@ -232,9 +254,9 @@ test_dir_symlink_unlink_works() {
 test_dir_symlink_remove_shared_file() {
     # If we remove a shared file, both of the symlinks should be removed.
 
-    new_test
-    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+    new_test_dir_symlink
     call_update
+
     # Remove a random shared file:
     rm -- "$test_src_dir/%DEST%/bar/3.txt"
     call_update
@@ -264,9 +286,9 @@ test_dir_symlink_remove_dir_symlink() {
     # If we remove a directory symlink in --shared-dir, all the symlinks
     # accessible through this directory symlink should be removed.
 
-    new_test
-    ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
+    new_test_dir_symlink
     call_update
+
     # Remove the directory symlink:
     rm -- "$test_src_dir/%ALT_DEST%"
     call_update
@@ -286,12 +308,17 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     verify_output "$expected_output" "$test_alt_dest_dir"
 }
 
+new_test_symlink() {
+    new_test "${FUNCNAME[1]}"
+
+    # Create a stupid symlink.
+    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+}
+
 test_symlink_update_works() {
     # Shared files can also be symlinks, pointing to something else.
 
-    new_test
-    # Create a stupid symlink.
-    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+    new_test_symlink
     call_update
 
     local expected_output="$test_dest_dir->
@@ -318,12 +345,12 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     test "$copy_content" = '3'
 }
 
-test_symlink_unlink_works() {
-    new_test
-    # Create a stupid symlink.
-    ln -s -- 'bar/3.txt' "$test_src_dir/%DEST%/3_copy.txt"
+test_symlink_remove_works() {
+    # Verify that links-remove doesn't delete shared symlinks.
+
+    new_test_symlink
     call_update
-    call_unlink
+    call_remove
 
     local expected_output="$test_dest_dir->"
     verify_output "$expected_output"
@@ -342,6 +369,7 @@ test_symlink_unlink_works() {
 
 test_chmod_works() {
     # Test that links-chmod works.
+
     new_test
     call_update
 
@@ -365,6 +393,7 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
 test_update_chmod() {
     # Test that links-update --mode works.
+
     new_test
     local expected_mode='0622'
     call_update --mode "$expected_mode"
@@ -384,16 +413,17 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
 main() {
     test_update_works
-    test_unlink_works
-    test_unlink_does_not_overwrite_files
+    test_remove_works
+    test_remove_does_not_overwrite_files
+    test_remove_does_not_delete_used_dirs
 
     test_dir_symlink_update_works
-    test_dir_symlink_unlink_works
+    test_dir_symlink_remove_works
     test_dir_symlink_remove_shared_file
     test_dir_symlink_remove_dir_symlink
 
     test_symlink_update_works
-    test_symlink_unlink_works
+    test_symlink_remove_works
 
     test_chmod_works
     test_update_chmod
