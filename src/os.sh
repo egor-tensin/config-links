@@ -5,11 +5,8 @@
 
 # Mostly Cygwin-related stuff
 
-os="$( uname -o )"
-readonly os
-
 is_cygwin() {
-    test "$os" == 'Cygwin'
+    test "$OSTYPE" == 'cygwin'
 }
 
 check_symlinks_enabled_cygwin() {
