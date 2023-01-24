@@ -7,10 +7,23 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    name: Test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: '${{ matrix.os }}'
+    name: 'Test / ${{ matrix.os }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          brew install bash coreutils findutils
+          echo "$(brew --prefix)/opt/coreutils/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix)/opt/findutils/libexec/gnubin" >> "$GITHUB_PATH"
+        if: runner.os == 'macOS'
+        # Is it even macOS anymore? It is for me. I really am too lazy to deal
+        # with ancient utilities that come with the actual macOS.
+
       - name: Test
         run: ./test/test.sh

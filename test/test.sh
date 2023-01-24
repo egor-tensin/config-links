@@ -32,7 +32,9 @@ new_test() {
     echo ======================================================================
     echo "New test: $test_name"
 
-    test_root_dir="$( mktemp --directory )"
+    test_root_dir="$( mktemp -d )"
+    # mktemp returns /var/..., which is actually in /private/var/... on macOS.
+    test_root_dir="$( readlink -e -- "$test_root_dir" )"
     test_src_dir="$test_root_dir/$src_dir_name"
     test_dest_dir="$test_root_dir/$dest_dir_name"
     test_alt_dest_dir="$test_root_dir/$alt_dest_dir_name"

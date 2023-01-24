@@ -32,9 +32,11 @@ Installation
 * For Arch Linux, use the [AUR package].
 * For Ubuntu, use the [PPA].
 * Alternatively, just checkout this repository.
+* For macOS, see [this section].
 
 [AUR package]: https://aur.archlinux.org/packages/config-links/
 [PPA]: https://launchpad.net/~egor-tensin/+archive/ubuntu/config-links
+[this section]: #macos
 
 Usage
 -----
@@ -109,6 +111,13 @@ Consequently, `ProgramFiles(x86)` (and other weird variable names Windows
 allows) are not supported.
 
 A special variable name `CONFIG_LINKS_ROOT` is resolved to the root path, "/".
+
+macOS
+-----
+
+macOS is supported on a basic level.
+GNU coreutils and findutils are required, which you can install using Homebrew.
+Don't forget to add them to PATH!
 
 License
 -------
