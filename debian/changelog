@@ -1,3 +1,15 @@
+config-links (2.0.2-1) unstable; urgency=medium
+
+  * workflows/ci: upgrade actions
+  * workflows: upgrade actions
+  * fix .gitattributes
+  * workflows/ci: test on macOS
+  * os.sh: no need to use uname here
+  * test: fix macOS runs
+  * README: update
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Tue, 24 Jan 2023 11:18:40 +0100
+
 config-links (2.0.1-3) unstable; urgency=medium
 
   * debian/Makefile: export NAME and EMAIL
