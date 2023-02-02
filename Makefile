@@ -38,7 +38,8 @@ test/local:
 
 test/docker/%: DO
 	cd test && \
-		DISTRO='$*' docker-compose run --rm test && \
+		DISTRO='$*' docker-compose build --pull && \
+		docker-compose run --rm test && \
 		docker-compose down -v
 
 .PHONY: test/docker
