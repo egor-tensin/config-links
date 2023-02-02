@@ -417,7 +417,18 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     verify_mode "$expected_mode" "$test_src_dir/%DEST%/1.txt"
 }
 
+show_env() {
+    echo
+    echo ======================================================================
+    echo Environment
+    echo ======================================================================
+
+    bash --version
+}
+
 main() {
+    show_env
+
     test_update_works
     test_remove_works
     test_remove_does_not_overwrite_files

@@ -1,7 +1,10 @@
 version: '3'
 services:
   test:
-    image: "ubuntu:${DISTRO:-xenial}"
+    build:
+      context: docker/
+      args:
+        DISTRO: "${DISTRO:-xenial}"
     volumes:
       - ../:/src
     command: /src/test/unit/test.sh
