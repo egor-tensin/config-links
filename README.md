@@ -101,6 +101,21 @@ For my personal real-life usage examples, see
 [my dotfiles]: https://github.com/egor-tensin/linux-home
 [Windows apps]: https://github.com/egor-tensin/windows-home
 
+Development
+-----------
+
+Run local tests using
+
+    make test
+
+Run Docker tests using
+
+    make test/docker
+
+Run all tests using
+
+    make test/all
+
 Limitations
 -----------
 
