@@ -42,5 +42,9 @@ test/docker/%: DO
 		docker-compose run --rm test && \
 		docker-compose down -v
 
+# Xenial has bash 4.3, which doesn't support inherit_errexit, which is a good
+# thing to test against.
+#
+# Keep the list repositories synced with the GitHub actions workflow.
 .PHONY: test/docker
 test/docker: test/docker/xenial test/docker/focal
