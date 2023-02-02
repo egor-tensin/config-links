@@ -10,6 +10,9 @@ readonly script_dir
 script_name="$( basename -- "${BASH_SOURCE[0]}" )"
 readonly script_name
 
+root_dir="$( git -C "$script_dir" rev-parse --show-toplevel )"
+readonly root_dir
+
 readonly src_dir_name='src'
 readonly dest_dir_name='dest'
 readonly alt_dest_dir_name='alt_dest'
@@ -63,15 +66,15 @@ call_bin_script() {
 }
 
 call_update() {
-    call_bin_script "$script_dir/../links-update" "$@"
+    call_bin_script "$root_dir/links-update" "$@"
 }
 
 call_remove() {
-    call_bin_script "$script_dir/../links-remove"
+    call_bin_script "$root_dir/links-remove"
 }
 
 call_chmod() {
-    call_bin_script "$script_dir/../links-chmod" "$@"
+    call_bin_script "$root_dir/links-chmod" "$@"
 }
 
 verify_output() {
