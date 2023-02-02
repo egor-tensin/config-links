@@ -4,4 +4,4 @@ services:
     image: "ubuntu:${DISTRO:-xenial}"
     volumes:
       - ../:/src
-    command: /src/test/test.sh
+    command: /src/test/unit/test.sh

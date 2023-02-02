@@ -34,7 +34,7 @@ test/all: test/local test/docker
 
 .PHONY: test/local
 test/local:
-	./test/test.sh
+	./test/unit/test.sh
 
 test/docker/%: DO
 	cd test && \
