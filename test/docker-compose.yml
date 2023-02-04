@@ -7,4 +7,7 @@ services:
         DISTRO: "${DISTRO:-xenial}"
     volumes:
       - ../:/src
-    command: /src/test/unit/test.sh
+    command:
+      - sh
+      - -c
+      - /src/test/unit/test.sh && /src/test/integration/test.sh
