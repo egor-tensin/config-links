@@ -1,11 +1,3 @@
 #!/usr/bin/make -f
 %:
-	dh $@
-
-# Replace the recipe above with this when the cowbuilder image is upgraded.
-#dh $@ --buildsystem=none
-# Also, remove the overrides below.
-
-override_dh_auto_build:
-
-override_dh_auto_test:
+	dh $@ --buildsystem=none
