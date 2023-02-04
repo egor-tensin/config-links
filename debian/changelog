@@ -1,3 +1,10 @@
+config-links (2.0.3-4) unstable; urgency=medium
+
+  * debian: upgrade cowbuilder image to Focal
+  * debian: force inclusion of the original sources
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Sat, 04 Feb 2023 19:18:40 +0000
+
 config-links (2.0.3-3) unstable; urgency=medium
 
   * workflows/ppa: do it on commits also
