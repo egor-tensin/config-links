@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test_local:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -26,4 +26,18 @@ jobs:
         # with ancient utilities that come with the actual macOS.
 
       - name: Test
-        run: ./test/test.sh
+        run: make test
+
+  test_docker:
+    strategy:
+      matrix:
+        # Keep in sync with those in Makefile:
+        distro: [xenial, focal]
+    runs-on: ubuntu-latest
+    name: 'Test / Docker / ${{ matrix.distro }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Test
+        run: make 'test/docker/${{ matrix.distro }}'

@@ -1,0 +1,13 @@
+version: '3'
+services:
+  test:
+    build:
+      context: docker/
+      args:
+        DISTRO: "${DISTRO:-xenial}"
+    volumes:
+      - ../:/src
+    command:
+      - sh
+      - -c
+      - /src/test/unit/test.sh && /src/test/integration/test.sh

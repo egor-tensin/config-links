@@ -192,6 +192,7 @@ shared_file_present() {
 }
 
 link_all_entries() {
+    local -a shared_var_dirs=()
     local shared_var_dir
 
     find "$shared_root_dir" \
@@ -201,6 +202,10 @@ link_all_entries() {
         -regex ".*/$var_name_regex\$" \
         -printf '%P\0' |
     while IFS= read -d '' -r shared_var_dir; do
+        shared_var_dirs+=("$shared_var_dir")
+    done
+
+    for shared_var_dir in ${shared_var_dirs[@]+"${shared_var_dirs[@]}"}; do
         dump "shared directory: $shared_root_dir$shared_var_dir"
         local shared_path
 

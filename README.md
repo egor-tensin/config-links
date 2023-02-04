@@ -53,16 +53,16 @@ To remove all symlinks, use `links-remove`.
 usage: links-remove [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run]
 ```
 
-In this example, symlinks to files in "../src" must appear in "/test/dest".
+In this example, symlinks to files in "/test/src" must appear in "/test/dest".
 
 ```
-> tree /test/dest/
+$ tree /test/dest/
 /test/dest/
 
 0 directories, 0 files
 
-> tree ../src/
-../src/
+$ tree /test/src/
+/test/src/
 └── %DEST%
     ├── a
     │   └── b
@@ -74,21 +74,21 @@ In this example, symlinks to files in "../src" must appear in "/test/dest".
 
 6 directories, 2 files
 
-> echo "$DEST"
+$ echo "$DEST"
 /test/dest
 
-> ./links-update --shared-dir ../src/
+$ ./links-update --shared-dir /test/src/
 ...
 
-> tree /test/dest/
+$ tree /test/dest/
 /test/dest/
 ├── a
 │   └── b
 │       └── c
-│           └── test.txt -> /cygdrive/d/workspace/personal/src/%DEST%/a/b/c/test.txt
+│           └── test.txt -> /test/src/%DEST%/a/b/c/test.txt
 └── foo
     └── bar
-        └── baz -> /cygdrive/d/workspace/personal/src/%DEST%/foo/bar/baz
+        └── baz -> /test/src/%DEST%/foo/bar/baz
 
 5 directories, 2 files
 ```
@@ -100,6 +100,21 @@ For my personal real-life usage examples, see
 
 [my dotfiles]: https://github.com/egor-tensin/linux-home
 [Windows apps]: https://github.com/egor-tensin/windows-home
+
+Development
+-----------
+
+Run local tests using
+
+    make test
+
+Run Docker tests using
+
+    make test/docker
+
+Run all tests using
+
+    make test/all
 
 Limitations
 -----------

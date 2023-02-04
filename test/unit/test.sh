@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
 set -o errexit -o nounset -o pipefail
-shopt -s inherit_errexit lastpipe
+shopt -s inherit_errexit 2> /dev/null || true
+shopt -s lastpipe
 
 script_dir="$( dirname -- "${BASH_SOURCE[0]}" )"
 script_dir="$( cd -- "$script_dir" && pwd )"
 readonly script_dir
 script_name="$( basename -- "${BASH_SOURCE[0]}" )"
 readonly script_name
+
+root_dir="$( git -C "$script_dir" rev-parse --show-toplevel )"
+readonly root_dir
 
 readonly src_dir_name='src'
 readonly dest_dir_name='dest'
@@ -62,15 +66,15 @@ call_bin_script() {
 }
 
 call_update() {
-    call_bin_script "$script_dir/../links-update" "$@"
+    call_bin_script "$root_dir/links-update" "$@"
 }
 
 call_remove() {
-    call_bin_script "$script_dir/../links-remove"
+    call_bin_script "$root_dir/links-remove"
 }
 
 call_chmod() {
-    call_bin_script "$script_dir/../links-chmod" "$@"
+    call_bin_script "$root_dir/links-chmod" "$@"
 }
 
 verify_output() {
@@ -413,7 +417,18 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     verify_mode "$expected_mode" "$test_src_dir/%DEST%/1.txt"
 }
 
+show_env() {
+    echo
+    echo ======================================================================
+    echo Environment
+    echo ======================================================================
+
+    bash --version
+}
+
 main() {
+    show_env
+
     test_update_works
     test_remove_works
     test_remove_does_not_overwrite_files
