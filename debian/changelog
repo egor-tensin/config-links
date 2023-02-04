@@ -1,3 +1,10 @@
+config-links (2.0.3-3) unstable; urgency=medium
+
+  * workflows/ppa: do it on commits also
+  * debian: shut up dh_auto_build
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Sat, 04 Feb 2023 18:18:37 +0000
+
 config-links (2.0.3-2) unstable; urgency=medium
 
   * debian: disable build system auto-detection
