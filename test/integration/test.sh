@@ -69,6 +69,8 @@ call_chmod() {
 test_my_dotfiles_work() {
     new_test
     call_update
+    # Again:
+    call_update
 }
 
 show_env() {
