@@ -69,7 +69,7 @@ src/test:
 
 .PHONY: src
 src:
-	pushd '$(call escape,$(root))' && gbp buildpackage -S '-k0x$(call escape,$(GPG_KEY))'
+	pushd '$(call escape,$(root))' && gbp buildpackage -S --changes-option=-sa '-k0x$(call escape,$(GPG_KEY))'
 
 .PHONY: bin/test
 bin/test:
