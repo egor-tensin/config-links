@@ -1,3 +1,21 @@
+config-links (2.0.3-1) unstable; urgency=medium
+
+  * debian/README: update
+  * accomodate older bash-es
+  * add Docker tests for older bash-es
+  * move unit tests to test/unit/
+  * test/unit: fix path to links-* tools
+  * fix Docker tests
+  * properly rebuild Docker images
+  * README: update
+  * README: update
+  * Makefile: add a comment
+  * add an "integration" test
+  * db.sh: fix Xenial tests
+  * t/i: call links-update twice, just in case
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Sat, 04 Feb 2023 11:42:19 +0000
+
 config-links (2.0.2-1) unstable; urgency=medium
 
   * workflows/ci: upgrade actions
