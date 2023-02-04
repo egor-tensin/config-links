@@ -1,3 +1,9 @@
+config-links (2.0.3-2) unstable; urgency=medium
+
+  * debian: disable build system auto-detection
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Sat, 04 Feb 2023 12:36:48 +0000
+
 config-links (2.0.3-1) unstable; urgency=medium
 
   * debian/README: update
