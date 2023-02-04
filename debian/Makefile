@@ -65,19 +65,19 @@ tag:
 
 .PHONY: src/test
 src/test:
-	cd -- '$(call escape,$(root))' && gbp buildpackage --build=source --no-sign --git-ignore-new
+	cd -- '$(call escape,$(root))' && gbp buildpackage -S --no-sign --git-ignore-new
 
 .PHONY: src
 src:
-	cd -- '$(call escape,$(root))' && gbp buildpackage --build=source '-k0x$(call escape,$(GPG_KEY))' --changes-option=-sa
+	cd -- '$(call escape,$(root))' && gbp buildpackage -S '-k0x$(call escape,$(GPG_KEY))' --changes-option=-sa
 
 .PHONY: bin/test
 bin/test:
-	cd -- '$(call escape,$(root))' && gbp buildpackage --build=binary --no-sign --git-ignore-new
+	cd -- '$(call escape,$(root))' && gbp buildpackage -b --no-sign --git-ignore-new
 
 .PHONY: bin
 bin:
-	cd -- '$(call escape,$(root))' && gbp buildpackage --build=binary '-k0x$(call escape,$(GPG_KEY))'
+	cd -- '$(call escape,$(root))' && gbp buildpackage -b '-k0x$(call escape,$(GPG_KEY))'
 
 .PHONY: dist/create
 dist/create:
