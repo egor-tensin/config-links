@@ -42,7 +42,7 @@ test/linux-home:
 
 test/docker/%: DO
 	cd test/docker && \
-		DISTRO='$*' docker-compose build --pull && \
+		DISTRO='$*' docker-compose build --force-rm --progress plain --pull -q && \
 		docker-compose run --rm test && \
 		docker-compose down -v
 
