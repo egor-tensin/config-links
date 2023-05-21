@@ -134,6 +134,16 @@ macOS is supported on a basic level.
 GNU coreutils and findutils are required, which you can install using Homebrew.
 Don't forget to add them to PATH!
 
+Cygwin
+------
+
+These scripts rely on the availability of native symlinks.
+On Windows/NTFS, they require Administrator privileges.
+
+Remember that in order to force `ln` to use native NTFS symlinks, your `CYGWIN`
+environment variable **must** include either `winsymlinks:native` or
+`winsymlinks:nativestrict`.
+
 License
 -------
 
