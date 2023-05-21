@@ -6,3 +6,5 @@ services:
       dockerfile: test/docker/Dockerfile
       args:
         DISTRO: "${DISTRO:-xenial}"
+    environment:
+      CI: y
