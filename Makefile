@@ -36,8 +36,12 @@ test/all: test/local test/docker
 test/local:
 	./test/local/test.sh
 
+.PHONY: test/linux-home
+test/linux-home:
+	./test/linux-home/test.sh
+
 test/docker/%: DO
-	cd test && \
+	cd test/docker && \
 		DISTRO='$*' docker-compose build --pull && \
 		docker-compose run --rm test && \
 		docker-compose down -v
