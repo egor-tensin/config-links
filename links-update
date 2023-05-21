@@ -5,18 +5,6 @@
 # For details, see https://github.com/egor-tensin/config-links.
 # Distributed under the MIT License.
 
-# This script relies on the availability of native symlinks.
-# Those are indeed supported by NTFS, but require Administrator privileges for
-# creation.
-# It likely won't bother you as long as you don't use the functions defined in
-# this file.
-# In any case, you will see `ln` complaining about some access being denied in
-# case something goes wrong.
-#
-# Remember that in order to force `ln` to use native NTFS symlinks, your
-# `CYGWIN` Windows environment variable value **must** include either
-# `winsymlinks:native` or `winsymlinks:nativestrict`!
-
 # usage: ./links-update [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-m|--mode MODE] [-n|--dry-run]
 
 set -o errexit -o nounset -o pipefail
@@ -25,7 +13,7 @@ shopt -s lastpipe
 
 script_name="$( basename -- "${BASH_SOURCE[0]}" )"
 readonly script_name
-script_path="$( realpath --canonicalize-existing -- "${BASH_SOURCE[0]}" )"
+script_path="$( readlink --canonicalize-existing -- "${BASH_SOURCE[0]}" )"
 readonly script_path
 script_dir="$( dirname -- "$script_path" )"
 readonly script_dir

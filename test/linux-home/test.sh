@@ -83,8 +83,12 @@ show_env() {
 }
 
 main() {
-    show_env
+    if [ -z "${CI:+x}" ]; then
+        echo "$script_name: please don't run it outside of CI runs" >&2
+        exit 1
+    fi
 
+    show_env
     test_my_dotfiles_work
 }
 
