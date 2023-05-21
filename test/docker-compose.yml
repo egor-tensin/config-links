@@ -10,4 +10,4 @@ services:
     command:
       - sh
       - -c
-      - /src/test/unit/test.sh && /src/test/integration/test.sh
+      - /src/test/local/test.sh && /src/test/linux-home/test.sh

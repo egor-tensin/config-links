@@ -17,9 +17,9 @@ readonly src_dir_name='src'
 readonly dest_dir_name='dest'
 readonly alt_dest_dir_name='alt_dest'
 
-src_dir_path="$script_dir/$src_dir_name"
+src_dir_path="$script_dir/dirs/$src_dir_name"
 readonly src_dir_path
-dest_dir_path="$script_dir/$dest_dir_name"
+dest_dir_path="$script_dir/dirs/$dest_dir_name"
 readonly dest_dir_path
 
 test_root_dir=
