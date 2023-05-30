@@ -36,6 +36,7 @@ test/all: test/local test/docker
 test/local:
 	./test/local/test.sh
 
+# This is deliberately excluded from test/all, because it quite destructive.
 .PHONY: test/linux-home
 test/linux-home:
 	./test/linux-home/test.sh
