@@ -1,3 +1,15 @@
+config-links (2.0.5-1) unstable; urgency=medium
+
+  * Makefile: add a comment
+  * Makefile: move the prelude to prelude.mk
+  * debian/Makefile: move the prelude to prelude.mk
+  * debian/README: update
+  * debian/vagrant: fix NFS mounting
+  * workflows/ci: upgrade actions
+  * workflows: upgrade actions
+
+ -- Egor Tensin <Egor.Tensin@gmail.com>  Sun, 28 Jan 2024 11:29:16 +0000
+
 config-links (2.0.4-1) unstable; urgency=medium
 
   * realpath -> readlink
