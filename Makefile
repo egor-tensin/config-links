@@ -23,9 +23,9 @@ test/linux-home:
 
 test/docker/%: DO
 	cd test/docker && \
-		DISTRO='$*' docker-compose build --force-rm --progress plain --pull -q && \
-		docker-compose run --rm test && \
-		docker-compose down -v
+		DISTRO='$*' docker compose --progress plain build --force-rm --pull -q && \
+		docker compose run --rm test && \
+		docker compose down -v
 
 # Xenial has bash 4.3, which doesn't support inherit_errexit, which is a good
 # thing to test against.
