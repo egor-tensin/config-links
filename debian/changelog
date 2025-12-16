@@ -1,3 +1,16 @@
+config-links (2.0.6-1) unstable; urgency=medium
+
+  * modernize Compose usage
+  * Makefile: fix a typo
+  * workflows/ci: upgrade actions
+  * debian: update GPG key
+  * workflows: upgrade actions
+  * debian: error out if required Vagrant plugins are not installed
+  * switch to egor@tensin.name
+  * switch to egor@tensin.name
+
+ -- Egor Tensin <egor@tensin.name>  Tue, 16 Dec 2025 22:39:39 +0000
+
 config-links (2.0.5-1) unstable; urgency=medium
 
   * Makefile: add a comment
