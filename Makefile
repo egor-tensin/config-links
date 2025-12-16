@@ -16,16 +16,16 @@ test/all: test/local test/docker
 test/local:
 	./test/local/test.sh
 
-# This is deliberately excluded from test/all, because it quite destructive.
+# This is deliberately excluded from test/all, because it's quite destructive.
 .PHONY: test/linux-home
 test/linux-home:
 	./test/linux-home/test.sh
 
 test/docker/%: DO
 	cd test/docker && \
-		DISTRO='$*' docker-compose build --force-rm --progress plain --pull -q && \
-		docker-compose run --rm test && \
-		docker-compose down -v
+		DISTRO='$*' docker compose --progress plain build --force-rm --pull -q && \
+		docker compose run --rm test && \
+		docker compose down -v
 
 # Xenial has bash 4.3, which doesn't support inherit_errexit, which is a good
 # thing to test against.
