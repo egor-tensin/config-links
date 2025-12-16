@@ -1,4 +1,4 @@
-# Maintainer: Egor Tensin <Egor.Tensin@gmail.com>
+# Maintainer: Egor Tensin <egor@tensin.name>
 pkgname=config-links
 pkgver=2.0.5
 pkgrel=1
