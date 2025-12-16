@@ -52,4 +52,4 @@ debian/build-area/.
       make DIST=focal dist
       make DIST=focal dist/test  # Ignores uncommitted changes.
 
- -- Egor Tensin <Egor.Tensin@gmail.com>  Wed, 28 Apr 2021 21:14:04 +0000
+ -- Egor Tensin <egor@tensin.name>  Wed, 28 Apr 2021 21:14:04 +0000

@@ -1,14 +1,14 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: config-links
-Upstream-Contact: Egor Tensin <Egor.Tensin@gmail.com>
+Upstream-Contact: Egor Tensin <egor@tensin.name>
 Source: https://github.com/egor-tensin/config-links
 
 Files: *
-Copyright: 2016-2021 Egor Tensin <Egor.Tensin@gmail.com>
+Copyright: 2016-2021 Egor Tensin <egor@tensin.name>
 License: MIT
 
 Files: debian/*
-Copyright: 2021 Egor Tensin <Egor.Tensin@gmail.com>
+Copyright: 2021 Egor Tensin <egor@tensin.name>
 License: MIT
 
 License: MIT
