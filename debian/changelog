@@ -1,3 +1,13 @@
+config-links (2.1.0-1) unstable; urgency=medium
+
+  * add dependabot.yml
+  * workflows/ci: remove on: pull_request
+  * workflows: remove on: pull_request
+  * reorganize files
+  * debian: update install rules
+
+ -- Egor Tensin <egor@tensin.name>  Sat, 06 Jun 2026 16:25:54 +0000
+
 config-links (2.0.6-1) unstable; urgency=medium
 
   * modernize Compose usage
