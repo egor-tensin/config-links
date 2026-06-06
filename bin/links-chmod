@@ -17,14 +17,14 @@ script_path="$( readlink --canonicalize-existing -- "${BASH_SOURCE[0]}" )"
 readonly script_path
 script_dir="$( dirname -- "$script_path" )"
 readonly script_dir
-src_dir="$( cd -- "$script_dir/src" && pwd )"
-readonly src_dir
+lib_dir="$( cd -- "$script_dir/../lib" && pwd )"
+readonly lib_dir
 
-. "$src_dir/common.sh"
-. "$src_dir/os.sh"
-. "$src_dir/path.sh"
-. "$src_dir/vars.sh"
-. "$src_dir/db.sh"
+. "$lib_dir/common.sh"
+. "$lib_dir/os.sh"
+. "$lib_dir/path.sh"
+. "$lib_dir/vars.sh"
+. "$lib_dir/db.sh"
 
 script_usage() {
     local msg
