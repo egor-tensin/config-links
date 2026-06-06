@@ -2,7 +2,5 @@ LICENSE.txt usr/share/config-links
 
 README.md usr/share/doc/config-links
 
-bin/links-update usr/lib/config-links
-bin/links-remove usr/lib/config-links
-bin/links-chmod  usr/lib/config-links
+bin usr/lib/config-links
 lib usr/lib/config-links

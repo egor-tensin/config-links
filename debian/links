@@ -1,3 +1,3 @@
-usr/lib/config-links/links-update usr/bin/links-update
-usr/lib/config-links/links-remove usr/bin/links-remove
-usr/lib/config-links/links-chmod  usr/bin/links-chmod
+usr/lib/config-links/bin/links-update usr/bin/links-update
+usr/lib/config-links/bin/links-remove usr/bin/links-remove
+usr/lib/config-links/bin/links-chmod  usr/bin/links-chmod
