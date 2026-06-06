@@ -2,7 +2,7 @@
 
 *.sh text eol=lf
 
-/links-* text eol=lf
+/bin/links-* text eol=lf
 
 /.github/      export-ignore
 .gitattributes export-ignore

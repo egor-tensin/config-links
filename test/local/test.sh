@@ -66,15 +66,15 @@ call_bin_script() {
 }
 
 call_update() {
-    call_bin_script "$root_dir/links-update" "$@"
+    call_bin_script "$root_dir/bin/links-update" "$@"
 }
 
 call_remove() {
-    call_bin_script "$root_dir/links-remove"
+    call_bin_script "$root_dir/bin/links-remove"
 }
 
 call_chmod() {
-    call_bin_script "$root_dir/links-chmod" "$@"
+    call_bin_script "$root_dir/bin/links-chmod" "$@"
 }
 
 verify_output() {
