@@ -13,7 +13,7 @@ jobs:
     name: 'Test / ${{ matrix.os }}'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -36,7 +36,7 @@ jobs:
     name: 'Test / Docker / ${{ matrix.distro }}'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Test
         run: make 'test/docker/${{ matrix.distro }}'
