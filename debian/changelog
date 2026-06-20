@@ -1,3 +1,18 @@
+config-links (2.1.1-1) unstable; urgency=medium
+
+  [ Egor Tensin ]
+  * workflows: upgrade actions
+  * dependabot: enable for branch "debian"
+
+  [ dependabot[bot] ]
+  * Bump actions/checkout from 6 to 7
+
+  [ dependabot[bot] ]
+  * Bump actions/checkout from 6 to 7
+  * workflows/ci: add job to update AUR branch
+
+ -- Egor Tensin <egor@tensin.name>  Sat, 20 Jun 2026 15:56:39 +0000
+
 config-links (2.1.0-1) unstable; urgency=medium
 
   * add dependabot.yml
