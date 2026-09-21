@@ -1,6 +1,6 @@
 # Copyright (c) 2016 Egor Tensin <egor@tensin.name>
 # This file is part of the "Config file sharing" project.
-# For details, see https://github.com/egor-tensin/config-links.
+# For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
 # Mostly Cygwin-related stuff
