@@ -14,8 +14,7 @@ $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
     test_verify_output "$expected_output"
 
-    echo
-    echo 'Verifying 1.txt (the shared file) permissions...'
+    log "Verifying 1.txt's (the shared file) permissions..."
 
     test_verify_mode 0644 "$test_src_dir/%DEST%/1.txt"
     test_run_chmod 0600

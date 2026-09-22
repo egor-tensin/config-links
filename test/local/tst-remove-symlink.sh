@@ -8,8 +8,7 @@ test_run() {
     local expected_output="$test_dest_dir->"
     test_verify_output "$expected_output"
 
-    echo
-    echo 'Verifying 3_copy.txt (the shared file) is valid...'
+    log 'Verifying 3_copy.txt (the shared file) is valid...'
 
     local copy_target
     copy_target="$( readlink -e -- "$test_src_dir/%DEST%/3_copy.txt" )"

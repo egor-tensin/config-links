@@ -16,8 +16,7 @@ $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
     test_verify_output "$expected_output"
 
-    echo
-    echo 'Verifying 3_copy.txt (the symlink) is valid...'
+    log 'Verifying 3_copy.txt (the symlink) is valid...'
 
     local copy_target
     copy_target="$( readlink -- "$test_dest_dir/3_copy.txt" )"

@@ -21,10 +21,10 @@ test_setup() {
     test_dest_dir="$test_root_dir/$dest_dir_name"
     test_alt_dest_dir="$test_root_dir/$alt_dest_dir_name"
 
-    echo "Root directory: $test_root_dir"
-    echo "Shared directory: $test_src_dir"
-    echo "%DEST% directory: $test_dest_dir"
-    echo "%ALT_DEST% directory: $test_alt_dest_dir"
+    log "Root directory: $test_root_dir"
+    log "Shared directory: $test_src_dir"
+    log "%DEST% directory: $test_dest_dir"
+    log "%ALT_DEST% directory: $test_alt_dest_dir"
 
     cp -r -- "$script_dir/data/$src_dir_name" "$test_src_dir"
     cp -r -- "$script_dir/data/$dest_dir_name" "$test_dest_dir"
@@ -51,13 +51,10 @@ test_cleanup_default() {
 }
 
 test_run_script() {
-    echo
-    echo -n 'Executing script:'
+    local msg='Executing script:'
+    msg="$msg$( printf -- ' %q' "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin" )"
+    log "$msg"
 
-    printf -- ' %q' "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
-    printf -- '\n'
-
-    echo
     DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
 }
 
@@ -80,24 +77,19 @@ test_verify_output() {
     fi
 
     local expected_output="$1"
-    echo
-    echo 'Expected directory structure:'
-    echo "$expected_output"
 
     local dest_dir="$test_dest_dir"
     [ "$#" -ge 2 ] && dest_dir="$2"
 
+    log "Verifying directory structure in $dest_dir..."
+
     local actual_output
     actual_output="$( find "$dest_dir" -printf '%h/%f->%l\n' | sort )"
-    echo
-    echo 'Actual directory structure:'
-    echo "$actual_output"
-    echo
 
-    if [ "$actual_output" = "$expected_output" ]; then
-        echo "... They match!"
-    else
-        echo "... The actual directory structure does not match the expected directory structure!" >&2
+    if [ "$actual_output" != "$expected_output" ]; then
+        fail "The actual files do not match the expected directory structure!"
+        fail_details "Expected:\n$expected_output"
+        fail_details "Actual:\n$actual_output"
         return 1
     fi
 }
@@ -111,20 +103,16 @@ test_verify_mode() {
     local expected_mode="$1"
     local path="$2"
 
-    echo
-    echo "Checking permissions for file: $path"
-    echo "Expected mode: $expected_mode"
+    log "Checking permissions for file: $path"
 
     local actual_mode
     actual_mode="$( stat -c '%a' -- "$path" )"
     actual_mode="0$actual_mode"
 
-    echo "Actual mode: $actual_mode"
-
-    if [ "$actual_mode" = "$expected_mode" ]; then
-        echo "... They match!"
-    else
-        echo "... They don't match."
+    if [ "$actual_mode" != "$expected_mode" ]; then
+        fail "They don't match"
+        fail_details "Expected: $expected_mode"
+        fail_details "Actual: $actual_mode"
         return 1
     fi
 }
