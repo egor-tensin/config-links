@@ -2,8 +2,8 @@ test_run() {
     # Basic test to make sure that links-update actually creates the proper
     # symlinks.
 
-    new_test
-    call_update
+    test_setup
+    test_run_update
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
@@ -14,5 +14,5 @@ $test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
 $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
-    verify_output "$expected_output"
+    test_verify_output "$expected_output"
 }

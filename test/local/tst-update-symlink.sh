@@ -1,8 +1,8 @@
 test_run() {
     # Shared files can also be symlinks, pointing to something else.
 
-    new_test_symlink
-    call_update
+    test_setup_symlink
+    test_run_update
 
     local expected_output="$test_dest_dir->
 $test_dest_dir/1.txt->$test_src_dir/%DEST%/1.txt
@@ -14,7 +14,7 @@ $test_dest_dir/bar/baz/4.txt->$test_src_dir/%DEST%/bar/baz/4.txt
 $test_dest_dir/foo->
 $test_dest_dir/foo/2.txt->$test_src_dir/%DEST%/foo/2.txt"
 
-    verify_output "$expected_output"
+    test_verify_output "$expected_output"
 
     echo
     echo 'Verifying 3_copy.txt (the symlink) is valid...'

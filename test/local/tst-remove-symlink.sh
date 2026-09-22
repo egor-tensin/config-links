@@ -1,12 +1,12 @@
 test_run() {
     # Verify that links-remove doesn't delete shared symlinks.
 
-    new_test_symlink
-    call_update
-    call_remove
+    test_setup_symlink
+    test_run_update
+    test_run_remove
 
     local expected_output="$test_dest_dir->"
-    verify_output "$expected_output"
+    test_verify_output "$expected_output"
 
     echo
     echo 'Verifying 3_copy.txt (the shared file) is valid...'
