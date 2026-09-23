@@ -1,3 +1,12 @@
+config-links (2.1.4-2) unstable; urgency=medium
+
+  * Revert "debian: remove --ignore-branch"
+  * debian: add a comment to gbp.conf
+  * debian: add make push target
+  * debian/README: update
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 23 Sep 2026 16:26:34 +0000
+
 config-links (2.1.4-1) unstable; urgency=medium
 
   * test/docker: apt-get -> apt
