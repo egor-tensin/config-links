@@ -41,6 +41,9 @@ deps:
 dch:
 	gbp dch --distribution=unstable --commit
 
+.PHONY: changelog
+changelog: dch
+
 .PHONY: tag
 tag:
 	gbp tag
