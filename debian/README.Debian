@@ -8,7 +8,8 @@ then `vagrant ssh`.  The project will be in /vagrant; kill the VM using
 There're a bunch of useful one-liners in Makefile.  Everything is built in
 debian/build-area/.
 
-  * Merge the new version to the debian branch:
+  * Merge the new version to the debian branch (cannot be a lightweight tag for
+    gbp tools to work):
 
       git merge TAG
 
