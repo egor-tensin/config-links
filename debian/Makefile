@@ -50,7 +50,7 @@ tag:
 
 .PHONY: push
 push:
-	gbp push
+	env GIT_SSH_COMMAND='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' gbp push
 
 .PHONY: src/test
 src/test:
