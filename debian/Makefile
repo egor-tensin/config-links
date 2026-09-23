@@ -43,7 +43,7 @@ dch:
 
 .PHONY: tag
 tag:
-	cd -- '$(call escape,$(root))' && gbp buildpackage --git-tag-only
+	gbp tag
 
 .PHONY: src/test
 src/test:
