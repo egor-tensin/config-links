@@ -1,3 +1,23 @@
+config-links (2.1.2-1) unstable; urgency=medium
+
+  [ Egor Tensin ]
+  * workflows/ci: passwordless sudo for builder
+
+  [ dependabot[bot] ]
+  * Bump actions/checkout from 6 to 7
+
+  [ dependabot[bot] ]
+  * Bump actions/checkout from 6 to 7
+  * remove annoying trailing period from repo URLs
+  * test/local: split test.sh into many files
+  * test/local: refactor things a little bit
+  * db.sh: fix findutils warnings
+  * test/local: tests summary & output tweaks
+  * test/local: split lib/common.sh, add logging routines, tweak output, etc.
+  * test/local: clean up lib/test.sh routines a little bit
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 23 Sep 2026 05:53:28 +0000
+
 config-links (2.1.1-1) unstable; urgency=medium
 
   [ Egor Tensin ]
