@@ -32,7 +32,7 @@ deps:
 		cowbuilder \
 		devscripts \
 		dh-make \
-		dput-ng \
+		dput \
 		git-buildpackage \
 		ubuntu-dev-tools \
 		vim
