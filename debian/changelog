@@ -1,3 +1,15 @@
+config-links (2.1.4-1) unstable; urgency=medium
+
+  * test/docker: apt-get -> apt
+  * debian: remove --ignore-branch
+  * debian: prettier Makefile
+  * debian/README: update
+  * debian: add changelog target for make
+  * Revert "debian: use dput-ng"
+  * debian: set --upstream-branch for gbp
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 23 Sep 2026 15:51:29 +0000
+
 config-links (2.1.2-2) unstable; urgency=medium
 
   * debian: apt-get -> apt
