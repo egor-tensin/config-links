@@ -1,3 +1,12 @@
+config-links (2.1.2-2) unstable; urgency=medium
+
+  * debian: apt-get -> apt
+  * debian: use gbp dch w/ the --commit option
+  * debian: use gbp tag
+  * debian: use dput-ng
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 23 Sep 2026 10:01:16 +0000
+
 config-links (2.1.2-1) unstable; urgency=medium
 
   [ Egor Tensin ]
