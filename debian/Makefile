@@ -48,6 +48,10 @@ changelog: dch
 tag:
 	gbp tag
 
+.PHONY: push
+push:
+	gbp push
+
 .PHONY: src/test
 src/test:
 	cd -- '$(call escape,$(root))' && gbp buildpackage -S --no-sign --git-ignore-new
