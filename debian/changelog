@@ -1,3 +1,9 @@
+config-links (2.1.4-3) unstable; urgency=medium
+
+  * debian: make push should be non-interactive
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 23 Sep 2026 16:31:29 +0000
+
 config-links (2.1.4-2) unstable; urgency=medium
 
   * Revert "debian: remove --ignore-branch"
