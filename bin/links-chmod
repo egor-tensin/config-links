@@ -2,7 +2,7 @@
 
 # Copyright (c) 2021 Egor Tensin <egor@tensin.name>
 # This file is part of the "Config file sharing" project.
-# For details, see https://github.com/egor-tensin/config-links.
+# For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
 # usage: ./links-chmod [-h|--help] [-d|--database PATH] [-s|--shared-dir DIR] [-n|--dry-run] MODE

@@ -14,7 +14,7 @@ test/all: test/local test/docker
 
 .PHONY: test/local
 test/local:
-	./test/local/test.sh
+	./test/local/main.sh
 
 # This is deliberately excluded from test/all, because it's quite destructive.
 .PHONY: test/linux-home

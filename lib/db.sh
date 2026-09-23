@@ -1,6 +1,6 @@
 # Copyright (c) 2016 Egor Tensin <egor@tensin.name>
 # This file is part of the "Config file sharing" project.
-# For details, see https://github.com/egor-tensin/config-links.
+# For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
 # Shared directory settings
@@ -197,7 +197,7 @@ link_all_entries() {
 
     find "$shared_root_dir" \
         -mindepth 1 -maxdepth 1 \
-        -\( -type d -o -type l -\) \
+        \( -type d -o -type l \) \
         -regextype posix-basic \
         -regex ".*/$var_name_regex\$" \
         -printf '%P\0' |
@@ -209,7 +209,7 @@ link_all_entries() {
         dump "shared directory: $shared_root_dir$shared_var_dir"
         local shared_path
 
-        find "$shared_root_dir$shared_var_dir/" -\( -type f -o -type l -\) -print0 |
+        find "$shared_root_dir$shared_var_dir/" \( -type f -o -type l \) -print0 |
         while IFS= read -d '' -r shared_path; do
             dump "    shared file path: $shared_path"
             local entry="${shared_path:${#shared_root_dir}}"
