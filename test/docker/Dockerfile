@@ -2,9 +2,9 @@ ARG DISTRO=xenial
 
 FROM ubuntu:$DISTRO
 
-RUN apt-get update && \
+RUN apt update && \
     DEBIAN_FRONTEND=noninteractive \
-        apt-get install -y --no-install-recommends ca-certificates git make
+        apt install -y --no-install-recommends ca-certificates git make
 
 RUN git config --global --add safe.directory /src
 
