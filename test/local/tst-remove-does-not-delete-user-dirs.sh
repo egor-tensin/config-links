@@ -15,5 +15,5 @@ test_run() {
 $test_dest_dir/bar->
 $test_dest_dir/bar/my-file->"
 
-    test_verify_output "$expected_output"
+    test_verify_output "$test_dest_dir" "$expected_output"
 }

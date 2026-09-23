@@ -3,6 +3,8 @@
 # For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
+test_should_fail=
+
 src_dir_name='src'
 dest_dir_name='dest'
 alt_dest_dir_name='alt_dest'
@@ -39,7 +41,7 @@ test_setup_symlink() {
 }
 
 test_setup_dir_symlink() {
-    test_setup "${FUNCNAME[1]}"
+    test_setup
 
     # Files will get symlinks in the directory pointed to by $DEST, as well as
     # by $ALT_DEST.
@@ -47,7 +49,10 @@ test_setup_dir_symlink() {
 }
 
 test_cleanup_default() {
-    [ -n "$test_root_dir" ] && rm -rf -- "$test_root_dir"
+    if [ -n "$test_root_dir" ]; then
+        log "Removing test's root directory: $test_root_dir"
+        rm -rf -- "$test_root_dir"
+    fi
 }
 
 test_run_script() {
@@ -55,7 +60,9 @@ test_run_script() {
     msg="$msg$( printf -- ' %q' "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin" )"
     log "$msg"
 
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin"
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" \
+        --shared-dir "$test_src_dir" \
+        --database "$test_root_dir/links.bin"
 }
 
 test_run_update() {
@@ -72,14 +79,12 @@ test_run_chmod() {
 
 test_verify_output() {
     if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
-        echo "usage: ${FUNCNAME[0]} EXPECTED_OUTPUT [DEST_DIR]" >&2
+        echo "usage: ${FUNCNAME[0]} DEST_DIR EXPECTED_OUTPUT" >&2
         return 1
     fi
 
-    local expected_output="$1"
-
-    local dest_dir="$test_dest_dir"
-    [ "$#" -ge 2 ] && dest_dir="$2"
+    local dest_dir="$1"
+    local expected_output="$2"
 
     log "Verifying directory structure in $dest_dir..."
 
@@ -96,12 +101,12 @@ test_verify_output() {
 
 test_verify_mode() {
     if [ "$#" -ne 2 ]; then
-        echo "usage: ${FUNCNAME[0]} EXPECTED_MODE FILE" >&2
+        echo "usage: ${FUNCNAME[0]} PATH EXPECTED_MODE" >&2
         return 1
     fi
 
-    local expected_mode="$1"
-    local path="$2"
+    local path="$1"
+    local expected_mode="$2"
 
     log "Checking permissions for file: $path"
 

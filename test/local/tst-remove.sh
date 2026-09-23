@@ -7,5 +7,5 @@ test_run() {
     test_run_remove
 
     local expected_output="$test_dest_dir->"
-    test_verify_output "$expected_output"
+    test_verify_output "$test_dest_dir" "$expected_output"
 }
