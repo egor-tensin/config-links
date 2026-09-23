@@ -12,25 +12,20 @@ debian/build-area/.
 
       git merge TAG
 
-  * Add a changelog entry (you'll need to fix the version manually):
+  * Add a changelog entry & tag it:
 
       make dch
+      make tag
 
   * To test, make a source package:
 
-      make src
+      make src       # Or:
       make src/test  # Ignores uncommitted changes.
 
   * To test, make a binary package:
 
-      make bin
+      make bin       # Or:
       make bin/test  # Ignores uncommmited changes.
-
-  * Commit the changes:
-
-      git add changelog
-      make commit
-      make tag
 
   * You can push the changes to GitHub now, and it should take care of the
     rest.  Otherwise, you can upload the package to Launchpad manually as
