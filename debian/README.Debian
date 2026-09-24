@@ -32,7 +32,7 @@ debian/build-area/.
 
       make push
 
-    The rest should be take care of by GitHub Actions.  Otherwise, you can
+    The rest should be taken care of by GitHub Actions.  Otherwise, you can
     upload the package to Launchpad manually as described below.
 
   * Upload the source package to the PPA:
