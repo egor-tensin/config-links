@@ -9,13 +9,13 @@ There're a bunch of useful one-liners in Makefile.  Everything is built in
 debian/build-area/.
 
   * Merge the new version to the debian branch (cannot be a lightweight tag for
-    gbp tools to work):
+    the gbp tools to work):
 
       git merge TAG
 
   * Add a changelog entry & tag it:
 
-      make dch
+      make changelog
       make tag
 
   * To test, make a source package:
