@@ -34,7 +34,6 @@ deps:
 		dh-make \
 		dput \
 		git-buildpackage \
-		ubuntu-dev-tools \
 		vim
 
 .PHONY: dch
