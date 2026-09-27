@@ -7,11 +7,8 @@ DO:
 all: test
 
 .PHONY: test
-test: test/local
-
-.PHONY: test/local
-test/local:
-	./test/local/main.sh
+test:
+	./test/main.sh
 
 test/docker/%: DO
 	cd test/docker && \
