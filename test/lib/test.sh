@@ -66,15 +66,15 @@ test_run_script() {
 }
 
 test_run_update() {
-    test_run_script "$script_dir/../../bin/links-update" "$@"
+    test_run_script "$script_dir/../bin/links-update" "$@"
 }
 
 test_run_remove() {
-    test_run_script "$script_dir/../../bin/links-remove"
+    test_run_script "$script_dir/../bin/links-remove"
 }
 
 test_run_chmod() {
-    test_run_script "$script_dir/../../bin/links-chmod" "$@"
+    test_run_script "$script_dir/../bin/links-chmod" "$@"
 }
 
 test_verify_output() {

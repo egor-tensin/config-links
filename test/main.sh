@@ -12,6 +12,8 @@ shopt -s lastpipe
 script_dir="$( dirname -- "${BASH_SOURCE[0]}" )"
 script_dir="$( cd -- "$script_dir" && pwd )"
 readonly script_dir
+script_name="$( basename -- "${BASH_SOURCE[0]}" )"
+readonly script_name
 
 source "$script_dir/lib/log.sh"
 
@@ -45,8 +47,16 @@ run_test_file() {
 }
 
 main() {
+    if [ "$#" -gt 1 ]; then
+        echo "usage: $script_name [PATTERN]" >&2
+        return 1
+    fi
+
     local -a test_files=()
     local test_file
+
+    local pattern='*'
+    [ "$#" -gt 0 ] && pattern="$1"
 
     find "$script_dir" \
         -mindepth 1 \
@@ -54,6 +64,7 @@ main() {
         -type f \
         -regex '.*/tst-.*\.sh$' \
         -regextype posix-basic \
+        -name "$pattern" \
         -printf '%P\0' \
         | sort -z \
         | \
@@ -65,4 +76,4 @@ main() {
     log_tests_summary
 }
 
-main
+main "$@"
