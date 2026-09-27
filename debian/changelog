@@ -1,3 +1,15 @@
+config-links (2.1.5-1) unstable; urgency=medium
+
+  * debian: clean up dependencies
+  * debian/README: update
+  * debian/README: fix a typo
+  * test/local: allow filtering tests
+  * test: move the linux-home test to test/local/
+  * test/local/ -> test/
+  * test: add tst-root.sh
+
+ -- Egor Tensin <egor@tensin.name>  Sun, 27 Sep 2026 11:08:22 +0000
+
 config-links (2.1.4-3) unstable; urgency=medium
 
   * debian: make push should be non-interactive
