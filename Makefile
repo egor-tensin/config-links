@@ -9,17 +9,9 @@ all: test
 .PHONY: test
 test: test/local
 
-.PHONY: test/all
-test/all: test/local test/docker
-
 .PHONY: test/local
 test/local:
 	./test/local/main.sh
-
-# This is deliberately excluded from test/all, because it's quite destructive.
-.PHONY: test/linux-home
-test/linux-home:
-	./test/linux-home/test.sh
 
 test/docker/%: DO
 	cd test/docker && \

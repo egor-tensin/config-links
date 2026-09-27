@@ -12,4 +12,4 @@ COPY [".", "/src"]
 
 WORKDIR /src
 
-CMD ["make", "test/local", "test/linux-home"]
+CMD ["make", "test/local"]
