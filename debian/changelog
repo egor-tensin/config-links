@@ -1,3 +1,9 @@
+config-links (2.1.8-1) unstable; urgency=medium
+
+  * tst-linux-home.sh: don't run inside pbuilder
+
+ -- Egor Tensin <egor@tensin.name>  Mon, 28 Sep 2026 09:31:44 +0000
+
 config-links (2.1.7-1) unstable; urgency=medium
 
   * Makefile: do nothing on all:
