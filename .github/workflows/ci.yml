@@ -47,7 +47,9 @@ jobs:
       - test_local
       - test_docker
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: |
+      startsWith(github.ref, 'refs/tags/')
+      && !startsWith(github.ref, 'refs/tags/debian/')
     container:
       image: archlinux:base-devel
     steps:
