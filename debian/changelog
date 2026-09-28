@@ -1,3 +1,9 @@
+config-links (2.1.7-1) unstable; urgency=medium
+
+  * Makefile: do nothing on all:
+
+ -- Egor Tensin <egor@tensin.name>  Mon, 28 Sep 2026 09:03:24 +0000
+
 config-links (2.1.6-1) unstable; urgency=medium
 
   * Makefile: add install: target
