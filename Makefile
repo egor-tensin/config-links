@@ -10,7 +10,7 @@ $(eval $(call noexpand,PKG_NAME))
 $(eval $(call noexpand,DESTDIR))
 
 .PHONY: all
-all: test
+all:
 
 .PHONY: test
 test:
