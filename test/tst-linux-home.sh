@@ -1,10 +1,19 @@
-[ -z "${CI+y}" ] && test_should_fail=y
-
-test_run() {
+_test_should_fail() {
     if [ -z "${CI+y}" ]; then
         fail "Don't run this test locally, it'll mess up your \$HOME"
-        return 1
+        return 0
     fi
+    if ! command -v git &> /dev/null; then
+        fail "git isn't available, assuming running inside a pbuilder"
+        return 0
+    fi
+    return 1
+}
+
+_test_should_fail 2> /dev/null && test_should_fail=y
+
+test_run() {
+    _test_should_fail && return 1
 
     readonly src_name=linux-home
     src_url="https://github.com/egor-tensin/$src_name.git"
