@@ -1,3 +1,12 @@
+config-links (2.1.6-1) unstable; urgency=medium
+
+  * Makefile: add install: target
+  * workflows/ci: don't publish to AUR on Debian tags
+  * debian/Makefile: remove unused stuff
+  * debian: use `make install`
+
+ -- Egor Tensin <egor@tensin.name>  Mon, 28 Sep 2026 08:56:47 +0000
+
 config-links (2.1.5-1) unstable; urgency=medium
 
   * debian: clean up dependencies
