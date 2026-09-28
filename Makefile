@@ -1,8 +1,5 @@
 include prelude.mk
 
-.PHONY: DO
-DO:
-
 PKG_NAME ?= config-links
 DESTDIR  ?=
 
