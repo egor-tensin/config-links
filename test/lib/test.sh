@@ -52,13 +52,15 @@ test_cleanup_default() {
 }
 
 test_run_script() {
-    local msg='Executing script:'
-    msg="$msg$( printf -- ' %q' "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin" )"
-    log "$msg"
-
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" \
-        --shared-dir "$test_src_dir" \
+    local common_args=(
+        --shared-dir "$test_src_dir"
         --database "$test_root_dir/links.bin"
+    )
+
+    log_run "$@" "${common_args[@]}"
+
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" \
+        "$@" "${common_args[@]}"
 }
 
 test_run_update() {

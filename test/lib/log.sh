@@ -10,6 +10,17 @@ log() {
     done
 }
 
+log_run() {
+    if [ "$#" -lt 1 ]; then
+        log "usage: ${FUNCNAME[0]} ARGV0 [ARG...]"
+        return 1
+    fi
+
+    local msg='Running:'
+    msg="$msg$( printf -- ' %q' "$@" )"
+    log "$msg"
+}
+
 fail() {
     local msg
     for msg; do
