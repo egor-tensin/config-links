@@ -4,12 +4,12 @@
 # Distributed under the MIT License.
 
 test_should_fail=
+test_root_dir=
 
 src_dir_name='src'
 dest_dir_name='dest'
 alt_dest_dir_name='alt_dest'
 
-test_root_dir=
 test_src_dir=
 test_dest_dir=
 test_alt_dest_dir=
