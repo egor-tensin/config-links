@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Copyright (c) 2026 Egor Tensin <egor@tensin.name>
-# This file is part of the "config-links" project.
+# This file is part of the "Config file sharing" project.
 # For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
