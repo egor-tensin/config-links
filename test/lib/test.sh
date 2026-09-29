@@ -6,10 +6,6 @@
 test_should_fail=
 test_root_dir=
 
-src_dir_name='src'
-dest_dir_name='dest'
-alt_dest_dir_name='alt_dest'
-
 test_src_dir=
 test_dest_dir=
 test_alt_dest_dir=
@@ -19,18 +15,18 @@ test_setup() {
     # mktemp returns /var/..., which is actually in /private/var/... on macOS.
     test_root_dir="$( readlink -e -- "$test_root_dir" )"
 
-    test_src_dir="$test_root_dir/$src_dir_name"
-    test_dest_dir="$test_root_dir/$dest_dir_name"
-    test_alt_dest_dir="$test_root_dir/$alt_dest_dir_name"
+    test_src_dir="$test_root_dir/src"
+    test_dest_dir="$test_root_dir/dest"
+    test_alt_dest_dir="$test_root_dir/alt_test"
 
     log "Root directory: $test_root_dir"
     log "Shared directory: $test_src_dir"
     log "%DEST% directory: $test_dest_dir"
     log "%ALT_DEST% directory: $test_alt_dest_dir"
 
-    cp -r -- "$script_dir/data/$src_dir_name" "$test_src_dir"
-    cp -r -- "$script_dir/data/$dest_dir_name" "$test_dest_dir"
-    cp -r -- "$script_dir/data/$dest_dir_name" "$test_alt_dest_dir"
+    cp -r -- "$script_dir/data/src" "$test_src_dir"
+    cp -r -- "$script_dir/data/dest" "$test_dest_dir"
+    cp -r -- "$script_dir/data/dest" "$test_alt_dest_dir"
 }
 
 test_setup_symlink() {
