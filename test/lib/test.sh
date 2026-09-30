@@ -52,15 +52,15 @@ test_cleanup_default() {
 }
 
 test_run_script() {
-    local common_args=(
+    local cmd=(
+        "$@"
         --shared-dir "$test_src_dir"
         --database "$test_root_dir/links.bin"
     )
 
-    log_run "$@" "${common_args[@]}"
+    log_run "${cmd[@]}"
 
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" \
-        "$@" "${common_args[@]}"
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "${cmd[@]}"
 }
 
 test_run_update() {
