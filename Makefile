@@ -22,9 +22,14 @@ test/docker/%: DO
 # Xenial has bash 4.3, which doesn't support inherit_errexit, which is a good
 # thing to test against.
 #
-# Keep the list repositories synced with the GitHub actions workflow.
+# Keep the list distros synced with the GitHub actions workflow & Launchpad.
 .PHONY: test/docker
-test/docker: test/docker/xenial test/docker/focal
+test/docker: test/docker/xenial
+test/docker: test/docker/bionic
+test/docker: test/docker/focal
+test/docker: test/docker/jammy
+test/docker: test/docker/noble
+test/docker: test/docker/resolute
 
 .PHONY: install
 install:
