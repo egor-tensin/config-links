@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Egor Tensin <egor@tensin.name>
-# This file is part of the "config-links" project.
+# This file is part of the "Config file sharing" project.
 # For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
@@ -8,6 +8,17 @@ log() {
     for msg; do
         echo -e "$test_file | $msg" >&2
     done
+}
+
+log_run() {
+    if [ "$#" -lt 1 ]; then
+        log "usage: ${FUNCNAME[0]} ARGV0 [ARG...]"
+        return 1
+    fi
+
+    local msg='Running:'
+    msg="$msg$( printf -- ' %q' "$@" )"
+    log "$msg"
 }
 
 fail() {

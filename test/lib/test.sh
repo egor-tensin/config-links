@@ -1,15 +1,11 @@
 # Copyright (c) 2026 Egor Tensin <egor@tensin.name>
-# This file is part of the "config-links" project.
+# This file is part of the "Config file sharing" project.
 # For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
 test_should_fail=
-
-src_dir_name='src'
-dest_dir_name='dest'
-alt_dest_dir_name='alt_dest'
-
 test_root_dir=
+
 test_src_dir=
 test_dest_dir=
 test_alt_dest_dir=
@@ -19,18 +15,18 @@ test_setup() {
     # mktemp returns /var/..., which is actually in /private/var/... on macOS.
     test_root_dir="$( readlink -e -- "$test_root_dir" )"
 
-    test_src_dir="$test_root_dir/$src_dir_name"
-    test_dest_dir="$test_root_dir/$dest_dir_name"
-    test_alt_dest_dir="$test_root_dir/$alt_dest_dir_name"
+    test_src_dir="$test_root_dir/src"
+    test_dest_dir="$test_root_dir/dest"
+    test_alt_dest_dir="$test_root_dir/alt_test"
 
     log "Root directory: $test_root_dir"
     log "Shared directory: $test_src_dir"
     log "%DEST% directory: $test_dest_dir"
     log "%ALT_DEST% directory: $test_alt_dest_dir"
 
-    cp -r -- "$script_dir/data/$src_dir_name" "$test_src_dir"
-    cp -r -- "$script_dir/data/$dest_dir_name" "$test_dest_dir"
-    cp -r -- "$script_dir/data/$dest_dir_name" "$test_alt_dest_dir"
+    cp -r -- "$script_dir/data/src" "$test_src_dir"
+    cp -r -- "$script_dir/data/dest" "$test_dest_dir"
+    cp -r -- "$script_dir/data/dest" "$test_alt_dest_dir"
 }
 
 test_setup_symlink() {
@@ -56,13 +52,15 @@ test_cleanup_default() {
 }
 
 test_run_script() {
-    local msg='Executing script:'
-    msg="$msg$( printf -- ' %q' "$@" --shared-dir "$test_src_dir" --database "$test_root_dir/links.bin" )"
-    log "$msg"
-
-    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "$@" \
-        --shared-dir "$test_src_dir" \
+    local cmd=(
+        "$@"
+        --shared-dir "$test_src_dir"
         --database "$test_root_dir/links.bin"
+    )
+
+    log_run "${cmd[@]}"
+
+    DEST="$test_dest_dir" ALT_DEST="$test_alt_dest_dir" "${cmd[@]}"
 }
 
 test_run_update() {
