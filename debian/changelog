@@ -1,3 +1,20 @@
+config-links (2.1.10-1) unstable; urgency=medium
+
+  * Makefile: move DO: to prelude.mk
+  * test: more checks + minor refactoring
+  * test: remove unnecessary global variables
+  * test: refactor out logging for calling executables
+  * test: consistent copyright notices
+  * test: minor refactoring
+  * workflows/ci: test on more distros
+  * workflows/ci: move AUR setup steps to aur:Makefile
+  * workflows: remove unnecessary action parameters
+  * Revert "workflows: remove unnecessary action parameters"
+  * workflows: add some comments
+  * debian: ditch Vagrant, switch to Docker
+
+ -- Egor Tensin <egor@tensin.name>  Sun, 04 Oct 2026 16:10:05 +0000
+
 config-links (2.1.8-1) unstable; urgency=medium
 
   * tst-linux-home.sh: don't run inside pbuilder
