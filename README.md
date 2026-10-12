@@ -9,6 +9,14 @@ Config file sharing
 * Checkout it on any machine.
 * Create and maintain symlinks to these files easily.
 
+Installation
+------------
+
+* Arch Linux: [AUR](https://aur.archlinux.org/packages/config-links)
+* Ubuntu: [PPA](https://launchpad.net/~egor-tensin/+archive/ubuntu/config-links)
+* Alternatively, just checkout this repository and use the scripts in bin/.
+* For macOS, see [this section](#macos).
+
 How it works
 ------------
 
@@ -25,18 +33,6 @@ The default database file name is "links.bin", maintained in the top-level
 directory with shared files.
 
 For a complete usage example, see below.
-
-Installation
-------------
-
-* For Arch Linux, use the [AUR package].
-* For Ubuntu, use the [PPA].
-* Alternatively, just checkout this repository.
-* For macOS, see [this section].
-
-[AUR package]: https://aur.archlinux.org/packages/config-links/
-[PPA]: https://launchpad.net/~egor-tensin/+archive/ubuntu/config-links
-[this section]: #macos
 
 Usage
 -----
