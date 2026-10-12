@@ -15,7 +15,7 @@ test:
 
 test/docker/%: DO
 	cd test/docker && \
-		DISTRO='$*' docker compose --progress plain build --force-rm --pull -q && \
+		DISTRO='$*' docker compose build --force-rm -q && \
 		docker compose run --rm test && \
 		docker compose down -v
 
