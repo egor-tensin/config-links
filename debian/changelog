@@ -1,3 +1,9 @@
+config-links (2.1.11-1) unstable; urgency=medium
+
+  * README: update
+
+ -- Egor Tensin <egor@tensin.name>  Mon, 12 Oct 2026 07:36:10 +0000
+
 config-links (2.1.10-1) unstable; urgency=medium
 
   * Makefile: move DO: to prelude.mk
