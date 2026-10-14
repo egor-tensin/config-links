@@ -1,3 +1,9 @@
+config-links (2.1.12-2) unstable; urgency=medium
+
+  * workflows: fetch submodules
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 14 Oct 2026 14:18:14 +0000
+
 config-links (2.1.12-1) unstable; urgency=medium
 
   * test/docker: refactoring & minimization
