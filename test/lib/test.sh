@@ -3,18 +3,11 @@
 # For details, see https://github.com/egor-tensin/config-links
 # Distributed under the MIT License.
 
-test_should_fail=
-test_root_dir=
-
 test_src_dir=
 test_dest_dir=
 test_alt_dest_dir=
 
 test_setup() {
-    test_root_dir="$( mktemp -d )"
-    # mktemp returns /var/..., which is actually in /private/var/... on macOS.
-    test_root_dir="$( readlink -e -- "$test_root_dir" )"
-
     test_src_dir="$test_root_dir/src"
     test_dest_dir="$test_root_dir/dest"
     test_alt_dest_dir="$test_root_dir/alt_test"
@@ -24,9 +17,9 @@ test_setup() {
     log "%DEST% directory: $test_dest_dir"
     log "%ALT_DEST% directory: $test_alt_dest_dir"
 
-    cp -r -- "$script_dir/data/src" "$test_src_dir"
-    cp -r -- "$script_dir/data/dest" "$test_dest_dir"
-    cp -r -- "$script_dir/data/dest" "$test_alt_dest_dir"
+    cp -r -- "$tests_dir/data/src" "$test_src_dir"
+    cp -r -- "$tests_dir/data/dest" "$test_dest_dir"
+    cp -r -- "$tests_dir/data/dest" "$test_alt_dest_dir"
 }
 
 test_setup_symlink() {
@@ -44,13 +37,6 @@ test_setup_dir_symlink() {
     ln -s -- '%DEST%' "$test_src_dir/%ALT_DEST%"
 }
 
-test_cleanup_default() {
-    if [ -n "$test_root_dir" ]; then
-        log "Removing test's root directory: $test_root_dir"
-        rm -rf -- "$test_root_dir"
-    fi
-}
-
 test_run_script() {
     local cmd=(
         "$@"
@@ -64,15 +50,15 @@ test_run_script() {
 }
 
 test_run_update() {
-    test_run_script "$script_dir/../bin/links-update" "$@"
+    test_run_script "$tests_dir/../bin/links-update" "$@"
 }
 
 test_run_remove() {
-    test_run_script "$script_dir/../bin/links-remove"
+    test_run_script "$tests_dir/../bin/links-remove"
 }
 
 test_run_chmod() {
-    test_run_script "$script_dir/../bin/links-chmod" "$@"
+    test_run_script "$tests_dir/../bin/links-chmod" "$@"
 }
 
 test_verify_output() {

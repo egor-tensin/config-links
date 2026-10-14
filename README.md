@@ -108,10 +108,6 @@ Run Docker tests using
 
     make test/docker
 
-Run all tests using
-
-    make test/all
-
 Limitations
 -----------
 
