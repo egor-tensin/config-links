@@ -1,3 +1,14 @@
+config-links (2.1.12-1) unstable; urgency=medium
+
+  * test/docker: refactoring & minimization
+  * Makefile: don't always pull images for Docker tests
+  * test: migrate to test-harness
+  * test: upgrade test-harness
+  * README: update
+  * test: upgrade test-harness
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 14 Oct 2026 14:14:33 +0000
+
 config-links (2.1.11-1) unstable; urgency=medium
 
   * README: update
