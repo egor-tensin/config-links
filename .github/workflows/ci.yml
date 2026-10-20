@@ -4,6 +4,8 @@ on:
   push:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   test_local:
     strategy:
@@ -15,6 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           submodules: recursive
 
       - name: Install dependencies
@@ -46,6 +49,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Test
         run: make 'test/docker/${{ matrix.distro }}'
@@ -76,6 +80,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          persist-credentials: true
           ref: aur
           submodules: recursive
           token: '${{ secrets.GH_TOKEN }}'
