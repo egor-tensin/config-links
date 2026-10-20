@@ -92,10 +92,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          persist-credentials: true
+          persist-credentials: false
           ref: aur
           submodules: recursive
-          token: ${{ secrets.GH_TOKEN }}
       - name: Run maintenance
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
