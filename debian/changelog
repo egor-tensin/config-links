@@ -1,3 +1,11 @@
+config-links (2.1.17-2) unstable; urgency=medium
+
+  [ github-actions[bot] ]
+  * workflows/ppa: secrets were renamed
+  * workflows: linting
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 21 Oct 2026 07:51:50 +0000
+
 config-links (2.1.17-1) unstable; urgency=medium
 
   [ Egor Tensin ]
