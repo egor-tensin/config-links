@@ -1,3 +1,23 @@
+config-links (2.1.17-1) unstable; urgency=medium
+
+  [ Egor Tensin ]
+  * test: upgrade test-harness
+  * test: upgrade test-harness
+  * dependabot: check git submodules
+  * fix zizmor warnings
+  * workflows/ci: terser
+  * workflows/ci: add zizmor job
+  * workflows/ci: do I need the token?
+  * rename a GitHub secret
+  * Revert "rename a GitHub secret"
+  * workflows/ci: try actions/checkout w/ ssh-key
+  * Revert "workflows/ci: try actions/checkout w/ ssh-key"
+
+  [ github-actions[bot] ]
+  * workflows/ci: try asking for token permissions
+
+ -- Egor Tensin <egor@tensin.name>  Wed, 21 Oct 2026 07:47:50 +0000
+
 config-links (2.1.12-3) unstable; urgency=medium
 
   * debian: include submodules in builds
