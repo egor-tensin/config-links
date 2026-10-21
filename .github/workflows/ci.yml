@@ -80,6 +80,8 @@ jobs:
       && !startsWith(github.ref, 'refs/tags/debian/')
     container:
       image: archlinux:base-devel
+    permissions:
+      contents: write
     steps:
       # This step must be done before actions/checkout. From the latter's
       # output:
