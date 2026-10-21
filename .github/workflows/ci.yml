@@ -4,19 +4,36 @@ on:
   push:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
-  test_local:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: '${{ matrix.os }}'
-    name: 'Test / ${{ matrix.os }}'
+  lint:
+    name: Linting
+    runs-on: ubuntu-slim
+    permissions:
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          submodules: recursive
+          persist-credentials: false
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@v0.7.1
 
+  test_local:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    name: Test / ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: recursive
       - name: Install dependencies
         run: |
           brew install bash coreutils findutils
@@ -25,7 +42,6 @@ jobs:
         if: runner.os == 'macOS'
         # Is it even macOS anymore? It is for me. I really am too lazy to deal
         # with ancient utilities that come with the actual macOS.
-
       - name: Test
         run: make test
 
@@ -41,18 +57,21 @@ jobs:
           - noble
           - resolute
     runs-on: ubuntu-latest
-    name: 'Test / Docker / ${{ matrix.distro }}'
+    name: Test / Docker / ${{ matrix.distro }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Test
-        run: make 'test/docker/${{ matrix.distro }}'
+        run: |
+          make 'test/docker/${{ matrix.distro }}'
 
   aur:
     name: Publish to AUR
     needs:
+      - lint
       - test_local
       - test_docker
     runs-on: ubuntu-latest
@@ -61,9 +80,8 @@ jobs:
       && !startsWith(github.ref, 'refs/tags/debian/')
     container:
       image: archlinux:base-devel
-      env:
-        SSH_KEY: |
-          ${{ secrets.SSH_KEY }}
+    permissions:
+      contents: write
     steps:
       # This step must be done before actions/checkout. From the latter's
       # output:
@@ -76,9 +94,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          persist-credentials: true
           ref: aur
           submodules: recursive
-          token: '${{ secrets.GH_TOKEN }}'
       - name: Run maintenance
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
           make -C "$GITHUB_WORKSPACE" ci
