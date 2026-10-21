@@ -94,8 +94,9 @@ jobs:
         with:
           persist-credentials: true
           ref: aur
-          ssh-key: ${{ secrets.SSH_KEY }}
           submodules: recursive
       - name: Run maintenance
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
           make -C "$GITHUB_WORKSPACE" ci
